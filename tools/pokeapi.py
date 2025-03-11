@@ -2,6 +2,8 @@ from typing import Dict, Any
 from core.config import settings
 import requests
 
+from core.exceptions import PokemonNotFoundError
+
 class PokeAPIService:
     """Service for interacting with the PokéAPI."""
     
@@ -34,7 +36,7 @@ class PokeAPIService:
             
             return essential_info
         else:
-            raise ValueError(f"Error: Pokémon '{pokemon_name}' not found.")
+            raise PokemonNotFoundError(f"TOOL ERROR: Pokémon '{pokemon_name}' not found.")
     
     @classmethod
     def get_type_data(cls, type_name: str) -> Dict[str, Any]:

@@ -10,7 +10,7 @@ class ResearcherAgent(BaseAgent):
         """Initialize the researcher agent."""
         super().__init__(llm)
         
-        prompt = """You are a researcher. When asked about Pokémon, use the provided tool to fetch data from the PokéAPI. Provide a clear, comprehensive answer that directly addresses the user's question."""
+        prompt = """You are a researcher. When asked about Pokémon, use the provided tool to fetch data from the PokéAPI. Provide a clear, comprehensive answer that directly addresses the user's question. If the tool returns an error, indicate that there might be a mistake and there is no such Pokémon."""
         
         self.agent = create_react_agent(llm, tools=[pokeapi_tool], prompt=prompt)
     
