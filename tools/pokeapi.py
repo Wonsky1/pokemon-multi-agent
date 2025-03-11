@@ -8,9 +8,16 @@ class PokeAPIService:
     """Service for interacting with the PokéAPI."""
     
     BASE_URL = settings.POKEAPI_BASE_URL
+
+    @classmethod
+    def pokemon_exists(cls, pokemon_name: str) -> bool:
+        """Check if a Pokémon exists in the PokéAPI."""
+        url = f"{cls.BASE_URL}/pokemon/{pokemon_name.lower()}"
+        response = requests.get(url)
+        return response.status_code == 200
     
     @classmethod
-    def get_pokemon_data(cls, pokemon_name: str) -> Dict[str, Any]:
+    def get_pokemon_data(cls, pokemon_name: str, get_type_data: bool = False) -> Dict[str, Any]:
         """Fetch Pokémon data from the PokéAPI."""
         url = f"{cls.BASE_URL}/pokemon/{pokemon_name.lower()}"
         response = requests.get(url)
@@ -26,14 +33,15 @@ class PokeAPIService:
                 "abilities": [ability["ability"]["name"] for ability in data.get("abilities", [])],
                 "stats": {stat["stat"]["name"]: stat["base_stat"] for stat in data.get("stats", [])},
                 "types": [ptype["type"]["name"] for ptype in data.get("types", [])],
-                "type_details": {}
             }
             
-            for type_name in essential_info["types"]:
-                type_data = cls.get_type_data(type_name)
-                if isinstance(type_data, dict) and "damage_relations" in type_data:
-                    essential_info["type_details"][type_name] = type_data["damage_relations"]
-            
+            if get_type_data:
+                essential_info["type_details"] = {}
+                for type_name in essential_info["types"]:
+                    type_data = cls.get_type_data(type_name)
+                    if isinstance(type_data, dict) and "damage_relations" in type_data:
+                        essential_info["type_details"][type_name] = type_data["damage_relations"]
+                
             return essential_info
         else:
             raise PokemonNotFoundError(f"TOOL ERROR: Pokémon '{pokemon_name}' not found.")

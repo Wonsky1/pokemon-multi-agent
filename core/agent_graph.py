@@ -2,6 +2,7 @@ from typing import Dict, Any, List, Literal
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import MessagesState, END, StateGraph, START
 from langgraph.types import Command
+from agents.models import PokemonData
 from agents.supervisor import SupervisorAgent
 from agents.researcher import ResearcherAgent
 from agents.pokemon_expert import PokemonExpertAgent
@@ -32,16 +33,27 @@ class AgentGraph:
     def _researcher_node(self, state: State) -> Command[Literal["__end__"]]:
         """Researcher node function."""
         result = self.researcher.process(state["messages"])
+        
+        structured_message = AIMessage(
+            content="",
+            additional_kwargs={"structured_output": result}
+        )
+        
         return Command(
-            update={"messages": state["messages"] + [AIMessage(content=result)]},
+            update={"messages": state["messages"] + [structured_message]},
             goto=END
         )
     
     def _pokemon_expert_node(self, state: State) -> Command[Literal["__end__"]]:
         """Pokémon expert node function."""
         result = self.pokemon_expert.process(state["messages"])
+        structured_message = AIMessage(
+            content="",
+            additional_kwargs={"structured_output": result}
+        )
+        
         return Command(
-            update={"messages": state["messages"] + [AIMessage(content=result)]},
+            update={"messages": state["messages"] + [structured_message]},
             goto=END
         )
     
@@ -52,7 +64,7 @@ class AgentGraph:
             update={"messages": state["messages"] + [AIMessage(content=result)]},
             goto=END
         )
-    
+
     def _build_graph(self) -> StateGraph:
         """Build the agent graph."""
         builder = StateGraph(State)
@@ -63,11 +75,22 @@ class AgentGraph:
         builder.add_node("direct_response", self._direct_response_node)
         return builder.compile()
     
-    def invoke(self, question: str) -> Dict[str, Any]:
-        """Invoke the agent graph with a question."""
+    def invoke(self, question: str) -> PokemonData | Dict[str, str]:
+        """Invoke the agent graph with a question.
+        
+        Returns:
+            - PokemonData model when the researcher agent is used
+            - Dict[str, str] with an "answer" key when other agents are used
+        """
         result = self.graph.invoke({
             "messages": [HumanMessage(content=question)]
         })
-        return {
-            "answer": result["messages"][-1].content
-        }
+        
+        last_message = result["messages"][-1]
+        if hasattr(last_message, "additional_kwargs") and "structured_output" in last_message.additional_kwargs:
+            structured_output = last_message.additional_kwargs["structured_output"]
+            return structured_output
+        else:
+            return {
+                "answer": last_message.content
+            }
