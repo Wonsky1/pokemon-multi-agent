@@ -3,10 +3,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import MessagesState, END, StateGraph, START
 from langgraph.types import Command
 from agents.models import PokemonData
-from agents.supervisor import SupervisorAgent
-from agents.researcher import ResearcherAgent
-from agents.pokemon_expert import PokemonExpertAgent
-from agents.direct_response import DirectResponseAgent
+from agents.factory import AgentFactory
 from core.config import settings
 
 class State(MessagesState):
@@ -19,10 +16,11 @@ class AgentGraph:
     def __init__(self):
         """Initialize the agent graph."""
         self.llm = settings.GENERATIVE_MODEL
-        self.supervisor = SupervisorAgent(self.llm)
-        self.researcher = ResearcherAgent(self.llm)
-        self.pokemon_expert = PokemonExpertAgent(self.llm)
-        self.direct_response = DirectResponseAgent(self.llm)
+
+        self.supervisor = AgentFactory.get_agent("supervisor")
+        self.researcher = AgentFactory.get_agent("researcher")
+        self.pokemon_expert = AgentFactory.get_agent("pokemon_expert")
+        self.direct_response = AgentFactory.get_agent("direct_response")
         self.graph = self._build_graph()
     
     def _supervisor_node(self, state: Dict[str, Any]) -> Command[Literal["researcher", "pokemon_expert", "direct_response"]]:
@@ -75,13 +73,8 @@ class AgentGraph:
         builder.add_node("direct_response", self._direct_response_node)
         return builder.compile()
     
-    def invoke(self, question: str) -> PokemonData | Dict[str, str]:
-        """Invoke the agent graph with a question.
-        
-        Returns:
-            - PokemonData model when the researcher agent is used
-            - Dict[str, str] with an "answer" key when other agents are used
-        """
+    def invoke(self, question: str) -> Dict[str, Any]:
+        """Invoke the agent graph with a question."""
         result = self.graph.invoke({
             "messages": [HumanMessage(content=question)]
         })

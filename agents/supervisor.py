@@ -37,20 +37,17 @@ class SupervisorAgent(BaseAgent):
     
     def process(self, messages: List[Dict[str, str]]) -> str:
         """Determine which agent should handle the request."""
-        try:
-            llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.RAW_CALL_SUFFIX}] + messages
-            raw_response = self.llm.invoke(llm_messages).content.strip().lower()
-            if raw_response in self.VALID_OPTIONS:
-                return raw_response
-            raise ValueError(f"Invalid response from supervisor: {raw_response}")
-            
-        except Exception as e:
-            print(f"Error in supervisor: {str(e)}")
+        for approach in ("structured", "raw"):
             try:
-                llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.STRUCTURED_CALL_SUFFIX}] + messages
-                structured_response = self.llm.with_structured_output(Router).invoke(llm_messages)
-                if structured_response.next in self.VALID_OPTIONS:
-                    return structured_response.next
-            except Exception as se:
-                print(f"Error in structured call: {str(se)}")
-            return "direct_response"
+                if approach == "raw":
+                    llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.RAW_CALL_SUFFIX}] + messages
+                    raw_response = self.llm.invoke(llm_messages).content.strip().lower()
+                    if raw_response in self.VALID_OPTIONS:
+                        return raw_response
+                else:
+                    llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.STRUCTURED_CALL_SUFFIX}] + messages
+                    structured_response = self.llm.with_structured_output(Router).invoke(llm_messages)
+                    if structured_response.next in self.VALID_OPTIONS:
+                        return structured_response.next
+            except Exception as e:
+                print(f"Error in {approach} approach: {str(e)}")

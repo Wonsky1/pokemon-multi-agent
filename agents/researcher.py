@@ -24,7 +24,7 @@ class ResearcherAgent(BaseAgent):
           }
         }
         
-        DO NOT attempt to correct misspellings.
+        DO NOT correct any misspellings, look for only the exact Pokémon name provided.
         DO NOT make up or hallucinate stats for Pokémon that don't exist. 
     """
     def __init__(self, llm):
