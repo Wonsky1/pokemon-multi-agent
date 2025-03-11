@@ -20,13 +20,19 @@ class AgentGraph:
         self.supervisor = AgentFactory.get_agent("supervisor")
         self.researcher = AgentFactory.get_agent("researcher")
         self.pokemon_expert = AgentFactory.get_agent("pokemon_expert")
-        self.direct_response = AgentFactory.get_agent("direct_response")
         self.graph = self._build_graph()
     
-    def _supervisor_node(self, state: Dict[str, Any]) -> Command[Literal["researcher", "pokemon_expert", "direct_response"]]:
+    def _supervisor_node(self, state: Dict[str, Any]) -> Command[Literal["researcher", "pokemon_expert", "__end__"]]:
         """Supervisor node function."""
-        next_agent = self.supervisor.process(state["messages"])
-        return Command(goto=next_agent, update={"next": next_agent})
+        result = self.supervisor.process(state["messages"])
+        
+        if isinstance(result, dict) and "answer" in result:
+            return Command(
+                update={"messages": state["messages"] + [AIMessage(content=result["answer"])]},
+                goto=END
+            )
+        
+        return Command(goto=result, update={"next": result})
     
     def _researcher_node(self, state: State) -> Command[Literal["__end__"]]:
         """Researcher node function."""
@@ -70,7 +76,9 @@ class AgentGraph:
         builder.add_node("supervisor", self._supervisor_node)
         builder.add_node("researcher", self._researcher_node)
         builder.add_node("pokemon_expert", self._pokemon_expert_node)
-        builder.add_node("direct_response", self._direct_response_node)
+        
+        builder.add_edge("supervisor", END)
+        
         return builder.compile()
     
     def invoke(self, question: str) -> Dict[str, Any]:

@@ -1,6 +1,8 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 from agents.base import BaseAgent
 from agents.models import Router
+from langchain_core.messages.base import BaseMessage
+
 
 class SupervisorAgent(BaseAgent):
     """Supervisor agent for routing requests to appropriate specialized agents."""
@@ -35,19 +37,36 @@ class SupervisorAgent(BaseAgent):
     Always use this exact JSON format - nothing else. No explanations, no additional text.
     """
     
-    def process(self, messages: List[Dict[str, str]]) -> str:
-        """Determine which agent should handle the request."""
-        for approach in ("structured", "raw"):
+    def process(self, messages: List[BaseMessage]) -> Union[str, Dict[str, str]]:
+        """Determine which agent should handle the request or respond directly."""
+        for approach in ("raw", "structured"):
             try:
                 if approach == "raw":
                     llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.RAW_CALL_SUFFIX}] + messages
                     raw_response = self.llm.invoke(llm_messages).content.strip().lower()
-                    if raw_response in self.VALID_OPTIONS:
+                    if raw_response == "direct_response":
+                        direct_message = messages[-1].content
+                        return self._generate_direct_response(direct_message)
+                    elif raw_response in self.VALID_OPTIONS:
                         return raw_response
                 else:
                     llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.STRUCTURED_CALL_SUFFIX}] + messages
                     structured_response = self.llm.with_structured_output(Router).invoke(llm_messages)
-                    if structured_response.next in self.VALID_OPTIONS:
+                    if structured_response.next == "direct_response":
+                        direct_message = messages[-1].content
+                        return self._generate_direct_response(direct_message)
+                    elif structured_response.next in self.VALID_OPTIONS:
                         return structured_response.next
             except Exception as e:
                 print(f"Error in {approach} approach: {str(e)}")
+                
+    def _generate_direct_response(self, message: str) -> Dict[str, str]:
+        """Generate a direct response to basic questions."""
+        direct_prompt = """You are a helpful assistant. Provide a clear, concise response to the user's question or message.
+        Keep your response friendly but brief."""
+        llm_messages = [
+            {"role": "system", "content": direct_prompt},
+            {"role": "user", "content": message}
+        ]
+        response = self.llm.invoke(llm_messages).content
+        return {"answer": response}

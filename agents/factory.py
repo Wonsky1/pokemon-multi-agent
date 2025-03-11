@@ -1,8 +1,6 @@
-# agents/factory.py
 from typing import Dict, Optional, Type, Any
 from langchain.agents import Tool
 from agents.base import BaseAgent
-from agents.direct_response import DirectResponseAgent
 from agents.pokemon_expert import PokemonExpertAgent
 from agents.researcher import ResearcherAgent
 from agents.supervisor import SupervisorAgent
@@ -16,14 +14,12 @@ class AgentFactory:
     
     _agent_classes = {
         "supervisor": SupervisorAgent,
-        "direct_response": DirectResponseAgent,
         "researcher": ResearcherAgent,
         "pokemon_expert": PokemonExpertAgent,
     }
     
     _default_configs = {
         "supervisor": {},
-        "direct_response": {},
         "researcher": {},
         "pokemon_expert": {
             "tools": [pokeapi_tool],
