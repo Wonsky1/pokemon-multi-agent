@@ -1,14 +1,15 @@
 from typing import List, Dict
 
-from agents.models import PokemonBattle
+from agents.models import AbstractPokemonBattle, DetailedPokemonBattle, SimplifiedPokemonBattle
 from tools.langchain_tools import pokeapi_tool_with_types as pokeapi_tool
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
+from langchain.agents import Tool
 
 class PokemonExpertAgent(BaseAgent):
     """Agent specialized in Pokémon battle analysis."""
     
-    EXPERT_PROMPT = """
+    AGENT_PROMPT = """
         You are a Pokémon expert analyzing battle scenarios. 
 
         CRITICAL INSTRUCTION: In ANY battle query, you MUST follow this EXACT procedure:
@@ -47,20 +48,20 @@ class PokemonExpertAgent(BaseAgent):
         Make sure to follow these instructions precisely.
     """
     
-    def __init__(self, llm):
+    def __init__(self, llm, tools: List[Tool] = [pokeapi_tool], prompt: str = AGENT_PROMPT, response_format: str = "detailed"):
         """Initialize the Pokémon expert agent."""
         super().__init__(llm)
-        
-        self.agent = create_react_agent(llm, tools=[pokeapi_tool], prompt=self.EXPERT_PROMPT, response_format=PokemonBattle)
+        response_format = DetailedPokemonBattle if response_format == "detailed" else SimplifiedPokemonBattle
+        self.agent = create_react_agent(llm, tools=tools, prompt=prompt, response_format=response_format)
     
-    def process(self, messages: List[Dict[str, str]]) -> str:
+    def process(self, messages: List[Dict[str, str]]) -> AbstractPokemonBattle:
         """Process the message using the react agent."""
         try:
             result = self.agent.invoke({"messages": messages})
-            structured_response: PokemonBattle = result["structured_response"]
+            structured_response: AbstractPokemonBattle = result["structured_response"]
             return structured_response
         except Exception as e:
-            return {
-                "winner": "BATTLE_IMPOSSIBLE",
-                "reason": "Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names."
-            }
+            return SimplifiedPokemonBattle(
+                winner="BATTLE_IMPOSSIBLE",
+                reasoning="Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names."
+            )

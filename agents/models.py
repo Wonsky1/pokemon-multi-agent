@@ -1,3 +1,4 @@
+from abc import ABC
 from pydantic import BaseModel, Field
 class Router(BaseModel):
     """Schema for router response."""
@@ -18,6 +19,11 @@ class PokemonData(BaseModel):
     name: str = Field(description="Name of the Pokémon.")
     base_stats: BaseStats = Field(description="Base stats of the Pokémon.")
 
-class PokemonBattle(BaseModel):
-    winner: str = Field(description="The winner of the battle.")
+class AbstractPokemonBattle(ABC, BaseModel):
     reasoning: str = Field(description="A very detailed analysis with your reasoning")
+
+class DetailedPokemonBattle(AbstractPokemonBattle):
+    answer: str = Field(description="A short answer to the battle query.")
+
+class SimplifiedPokemonBattle(AbstractPokemonBattle):
+    winner: str = Field(description="The winner of the battle.")
