@@ -1,6 +1,6 @@
 from typing import List, Dict
 from agents.models import PokemonData
-from tools.langchain_tools import pokeapi_tool
+from tools.langchain_tools import async_pokeapi_tool
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 
@@ -31,12 +31,12 @@ class ResearcherAgent(BaseAgent):
         """Initialize the researcher agent."""
         super().__init__(llm)
                 
-        self.agent = create_react_agent(llm, tools=[pokeapi_tool], prompt=self.AGENT_PROMPT, response_format=PokemonData)
+        self.agent = create_react_agent(llm, tools=[async_pokeapi_tool], prompt=self.AGENT_PROMPT, response_format=PokemonData)
     
-    def process(self, messages: List[Dict[str, str]]) -> dict:
-        """Process the message using the react agent."""
+    async def process(self, messages: List[Dict[str, str]]) -> dict:
+        """Process the message using the react agent asynchronously."""
         try:
-            result = self.agent.invoke({"messages": messages})
+            result = await self.agent.ainvoke({"messages": messages})
             return result["structured_response"]
         except Exception as e:
             return {

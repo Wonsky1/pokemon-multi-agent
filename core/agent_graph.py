@@ -11,7 +11,7 @@ class State(MessagesState):
     next: str
 
 class AgentGraph:
-    """Multi-agent orchestration graph."""
+    """Multi-agent orchestration graph with async support."""
     
     def __init__(self):
         """Initialize the agent graph."""
@@ -22,9 +22,9 @@ class AgentGraph:
         self.pokemon_expert = AgentFactory.get_agent("pokemon_expert")
         self.graph = self._build_graph()
     
-    def _supervisor_node(self, state: Dict[str, Any]) -> Command[Literal["researcher", "pokemon_expert", "__end__"]]:
+    async def _supervisor_node(self, state: Dict[str, Any]) -> Command[Literal["researcher", "pokemon_expert", "__end__"]]:
         """Supervisor node function."""
-        result = self.supervisor.process(state["messages"])
+        result = await self.supervisor.process(state["messages"])
         
         if isinstance(result, dict) and "answer" in result:
             return Command(
@@ -34,9 +34,9 @@ class AgentGraph:
         
         return Command(goto=result, update={"next": result})
     
-    def _researcher_node(self, state: State) -> Command[Literal["__end__"]]:
+    async def _researcher_node(self, state: State) -> Command[Literal["__end__"]]:
         """Researcher node function."""
-        result = self.researcher.process(state["messages"])
+        result = await self.researcher.process(state["messages"])
         
         structured_message = AIMessage(
             content="",
@@ -48,9 +48,9 @@ class AgentGraph:
             goto=END
         )
     
-    def _pokemon_expert_node(self, state: State) -> Command[Literal["__end__"]]:
+    async def _pokemon_expert_node(self, state: State) -> Command[Literal["__end__"]]:
         """Pokémon expert node function."""
-        result = self.pokemon_expert.process(state["messages"])
+        result = await self.pokemon_expert.process(state["messages"])
         structured_message = AIMessage(
             content="",
             additional_kwargs={"structured_output": result}
@@ -58,14 +58,6 @@ class AgentGraph:
         
         return Command(
             update={"messages": state["messages"] + [structured_message]},
-            goto=END
-        )
-    
-    def _direct_response_node(self, state: State) -> Command[Literal["__end__"]]:
-        """Direct response node function."""
-        result = self.direct_response.process(state["messages"])
-        return Command(
-            update={"messages": state["messages"] + [AIMessage(content=result)]},
             goto=END
         )
 
@@ -81,9 +73,9 @@ class AgentGraph:
         
         return builder.compile()
     
-    def invoke(self, question: str) -> Dict[str, Any]:
-        """Invoke the agent graph with a question."""
-        result = self.graph.invoke({
+    async def invoke(self, question: str) -> Dict[str, Any]:
+        """Invoke the agent graph with a question asynchronously."""
+        result = await self.graph.ainvoke({
             "messages": [HumanMessage(content=question)]
         })
         

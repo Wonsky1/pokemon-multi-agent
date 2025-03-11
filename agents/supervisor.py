@@ -37,30 +37,30 @@ class SupervisorAgent(BaseAgent):
     Always use this exact JSON format - nothing else. No explanations, no additional text.
     """
     
-    def process(self, messages: List[BaseMessage]) -> Union[str, Dict[str, str]]:
+    async def process(self, messages: List[BaseMessage]) -> Union[str, Dict[str, str]]:
         """Determine which agent should handle the request or respond directly."""
-        for approach in ("raw", "structured"):
+        for approach in ("structured", "raw"):
             try:
                 if approach == "raw":
                     llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.RAW_CALL_SUFFIX}] + messages
-                    raw_response = self.llm.invoke(llm_messages).content.strip().lower()
+                    raw_response = (await self.llm.ainvoke(llm_messages)).content.strip().lower()
                     if raw_response == "direct_response":
                         direct_message = messages[-1].content
-                        return self._generate_direct_response(direct_message)
+                        return await self._generate_direct_response(direct_message)
                     elif raw_response in self.VALID_OPTIONS:
                         return raw_response
                 else:
                     llm_messages = [{"role": "system", "content": self.SYSTEM_PROMPT + self.STRUCTURED_CALL_SUFFIX}] + messages
-                    structured_response = self.llm.with_structured_output(Router).invoke(llm_messages)
+                    structured_response = await self.llm.with_structured_output(Router).ainvoke(llm_messages)
                     if structured_response.next == "direct_response":
                         direct_message = messages[-1].content
-                        return self._generate_direct_response(direct_message)
+                        return await self._generate_direct_response(direct_message)
                     elif structured_response.next in self.VALID_OPTIONS:
                         return structured_response.next
             except Exception as e:
                 print(f"Error in {approach} approach: {str(e)}")
                 
-    def _generate_direct_response(self, message: str) -> Dict[str, str]:
+    async def _generate_direct_response(self, message: str) -> Dict[str, str]:
         """Generate a direct response to basic questions."""
         direct_prompt = """You are a helpful assistant. Provide a clear, concise response to the user's question or message.
         Keep your response friendly but brief."""
@@ -68,5 +68,5 @@ class SupervisorAgent(BaseAgent):
             {"role": "system", "content": direct_prompt},
             {"role": "user", "content": message}
         ]
-        response = self.llm.invoke(llm_messages).content
+        response = (await self.llm.ainvoke(llm_messages)).content
         return {"answer": response}

@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Dict, List, Any
 
 class BaseAgent(ABC):
-    """Base class for all agents."""
+    """Base class for all agents with async support."""
     
     def __init__(self, llm):
         """Initialize the agent with an LLM."""
         self.llm = llm
     
     @abstractmethod
-    def process(self, messages: List[Dict[str, str]]) -> str:
-        """Process messages and return a response."""
+    async def process(self, messages: List[Dict[str, str]]) -> Any:
+        """Process messages and return a response asynchronously."""
         pass

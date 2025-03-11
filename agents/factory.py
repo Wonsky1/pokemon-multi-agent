@@ -4,11 +4,11 @@ from agents.base import BaseAgent
 from agents.pokemon_expert import PokemonExpertAgent
 from agents.researcher import ResearcherAgent
 from agents.supervisor import SupervisorAgent
-from tools.langchain_tools import pokeapi_tool, pokeapi_tool_with_types
+from tools.langchain_tools import async_pokeapi_tool, async_pokeapi_tool_with_types
 from core.config import settings
 
 class AgentFactory:
-    """Factory for creating agent instances."""
+    """Factory for creating agent instances with async support."""
     
     _instances: Dict[str, BaseAgent] = {}
     
@@ -22,7 +22,7 @@ class AgentFactory:
         "supervisor": {},
         "researcher": {},
         "pokemon_expert": {
-            "tools": [pokeapi_tool],
+            "tools": [async_pokeapi_tool],
             "response_format": "detailed"
         }
     }
@@ -93,7 +93,7 @@ class AgentFactory:
             A configured PokemonExpertAgent for battle analysis
         """
         battle_expert_config = {
-            "tools": [pokeapi_tool_with_types],
+            "tools": [async_pokeapi_tool_with_types],
             "response_format": response_format
         }
         

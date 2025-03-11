@@ -1,13 +1,13 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from agents.models import AbstractPokemonBattle, DetailedPokemonBattle, SimplifiedPokemonBattle
-from tools.langchain_tools import pokeapi_tool_with_types as pokeapi_tool
+from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 from langchain.agents import Tool
 
 class PokemonExpertAgent(BaseAgent):
-    """Agent specialized in Pokémon battle analysis."""
+    """Agent specialized in Pokémon battle analysis with async support."""
     
     AGENT_PROMPT = """
         You are a Pokémon expert analyzing battle scenarios. 
@@ -48,16 +48,16 @@ class PokemonExpertAgent(BaseAgent):
         Make sure to follow these instructions precisely.
     """
     
-    def __init__(self, llm, tools: List[Tool] = [pokeapi_tool], prompt: str = AGENT_PROMPT, response_format: str = "detailed"):
+    def __init__(self, llm, tools: List[Tool] = [async_pokeapi_tool_with_types], prompt: str = AGENT_PROMPT, response_format: str = "detailed"):
         """Initialize the Pokémon expert agent."""
         super().__init__(llm)
         response_format = DetailedPokemonBattle if response_format == "detailed" else SimplifiedPokemonBattle
         self.agent = create_react_agent(llm, tools=tools, prompt=prompt, response_format=response_format)
-    
-    def process(self, messages: List[Dict[str, str]]) -> AbstractPokemonBattle:
-        """Process the message using the react agent."""
+
+    async def process(self, messages: List[Dict[str, str]]) -> AbstractPokemonBattle:
+        """Process the message using the react agent asynchronously."""
         try:
-            result = self.agent.invoke({"messages": messages})
+            result = await self.agent.ainvoke({"messages": messages})
             structured_response: AbstractPokemonBattle = result["structured_response"]
             return structured_response
         except Exception as e:

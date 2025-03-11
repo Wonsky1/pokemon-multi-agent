@@ -3,14 +3,15 @@ from http.client import HTTPException
 from fastapi import FastAPI, Depends
 import uvicorn
 from langchain_core.messages import HumanMessage
-
+from agents.pokemon_expert import PokemonExpertAgent
 from agents.factory import AgentFactory
 from api.models import ChatRequest
 from core.agent_graph import AgentGraph
 from core.exceptions import PokemonNotFoundError
-from tools.pokeapi import PokeAPIService, get_pokemon_service
+from tools.pokeapi import PokeAPIService, get_pokemon_service, initialize_pokemon_service, shutdown_pokemon_service
 
 agent_graph: AgentGraph | None = None
+battle_expert: PokemonExpertAgent | None = None
 
 battle_expert_prompt = """
 You are a Pokémon expert analyzing battle scenarios.
@@ -35,20 +36,17 @@ Make sure to follow these instructions precisely.
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await initialize_pokemon_service()
+    
     global agent_graph
     agent_graph = AgentGraph()
-    
-    AgentFactory.register_agent_class(
-        "battle_expert", 
-        agent_class=AgentFactory._agent_classes["pokemon_expert"],
-        default_config={
-            "response_format": "simplified",
-            "prompt": battle_expert_prompt,
-            "tools": []
-        }
-    )
+
+    global battle_expert
+    battle_expert = AgentFactory.create_battle_expert(custom_prompt=battle_expert_prompt)
     
     yield
+    
+    await shutdown_pokemon_service()
 
 app = FastAPI(
     lifespan=lifespan,
@@ -61,7 +59,7 @@ app = FastAPI(
 async def chat(request: ChatRequest):
     """Chat endpoint."""
     try:
-        result = agent_graph.invoke(request.question)
+        result = await agent_graph.invoke(request.question)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -74,17 +72,12 @@ async def battle(
 ):
     """Battle endpoint."""
     try:
-        battle_expert = AgentFactory.create_battle_expert(
-            response_format="simplified", 
-            custom_prompt=battle_expert_prompt
-        )
-        
-        pokemon1_data = pokemon_service.get_pokemon_data(pokemon1)
-        pokemon2_data = pokemon_service.get_pokemon_data(pokemon2)
+        pokemon1_data = await pokemon_service.get_pokemon_data(pokemon1)
+        pokemon2_data = await pokemon_service.get_pokemon_data(pokemon2)
 
         query = f"Who would win in a battle, {pokemon1}: {pokemon1_data}\nor {pokemon2}: {pokemon2_data}?"
         messages = [{"role": "human", "content": query}]
-        result = battle_expert.process(messages)
+        result = await battle_expert.process(messages)
         return result
         
     except PokemonNotFoundError as e:
