@@ -3,26 +3,13 @@ from agents.base import BaseAgent
 from agents.models import Router
 from langchain_core.messages.base import BaseMessage
 
+from prompts import SYSTEM_PROMPT, DIRECT_ANSWER_PROMPT
+
 
 class SupervisorAgent(BaseAgent):
     """Supervisor agent for routing requests to appropriate specialized agents."""
 
     VALID_OPTIONS = ["researcher", "pokemon_expert", "direct_response"]
-
-    SYSTEM_PROMPT = """
-    You are a supervisor tasked with classifying user questions.
-    
-    Given the user's message, classify it into ONE of these categories:
-    
-    1. researcher: For questions about Pokémon facts or data
-       Example: "What are the base stats of Charizard?"
-       
-    2. pokemon_expert: For questions about Pokémon analysis or battle scenarios
-       Example: "Who would win in a battle, Pikachu or Bulbasaur?"
-       
-    3. direct_response: For ANY basic questions not specifically about Pokémon
-       Example: "What's your name?", "Hello", "My name is Vlad", etc.
-    """
 
     RAW_CALL_SUFFIX: str = """    
     IMPORTANT: Respond with ONLY ONE WORD - either "researcher", "pokemon_expert", or "direct_response".
@@ -46,7 +33,7 @@ class SupervisorAgent(BaseAgent):
                     llm_messages = [
                         {
                             "role": "system",
-                            "content": self.SYSTEM_PROMPT + self.RAW_CALL_SUFFIX,
+                            "content": SYSTEM_PROMPT + self.RAW_CALL_SUFFIX,
                         }
                     ] + messages
                     raw_response = (
@@ -61,7 +48,7 @@ class SupervisorAgent(BaseAgent):
                     llm_messages = [
                         {
                             "role": "system",
-                            "content": self.SYSTEM_PROMPT + self.STRUCTURED_CALL_SUFFIX,
+                            "content": SYSTEM_PROMPT + self.STRUCTURED_CALL_SUFFIX,
                         }
                     ] + messages
                     structured_response = await self.llm.with_structured_output(
@@ -77,10 +64,8 @@ class SupervisorAgent(BaseAgent):
 
     async def _generate_direct_response(self, message: str) -> Dict[str, str]:
         """Generate a direct response to basic questions."""
-        direct_prompt = """You are a helpful assistant. Provide a clear, concise response to the user's question or message.
-        Keep your response friendly but brief."""
         llm_messages = [
-            {"role": "system", "content": direct_prompt},
+            {"role": "system", "content": DIRECT_ANSWER_PROMPT},
             {"role": "user", "content": message},
         ]
         response = (await self.llm.ainvoke(llm_messages)).content

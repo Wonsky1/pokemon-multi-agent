@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from http.client import HTTPException
 from fastapi import FastAPI, Depends
-from prompts import battle_expert_prompt
+from prompts import BATTLE_EXPERT_PROMPT
 from langchain_core.messages import HumanMessage
 from agents.pokemon_expert import PokemonExpertAgent
 from agents.factory import AgentFactory
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 
     global battle_expert
     battle_expert = AgentFactory.create_battle_expert(
-        custom_prompt=battle_expert_prompt
+        custom_prompt=BATTLE_EXPERT_PROMPT
     )
 
     yield
