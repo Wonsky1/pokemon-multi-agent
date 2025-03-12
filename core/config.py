@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     @field_validator("GENERATIVE_MODEL")
     def generative_model(
         cls, value: Optional[BaseChatModel], info: ValidationInfo
-    ) -> Optional[ChatGroq]:
+    ) -> Optional[BaseChatModel]:
         env_data = info.data
         local_development = env_data.get("LOCAL_DEVELOPMENT")
 
