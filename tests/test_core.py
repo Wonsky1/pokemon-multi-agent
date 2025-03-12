@@ -8,6 +8,7 @@ from core.agent_graph import AgentGraph, get_agent_graph
 # agent_graph.py tests
 # ------------------------------------
 
+
 class TestAgentGraph(unittest.IsolatedAsyncioTestCase):
     """
     Test suite for the AgentGraph class in core.agent_graph.
@@ -51,7 +52,9 @@ class TestAgentGraph(unittest.IsolatedAsyncioTestCase):
         Test when supervisor delegates the task to the researcher agent.
         """
         self.mock_supervisor.process.return_value = "researcher"
-        self.mock_researcher.process.return_value = {"facts": ["Pikachu is an electric type."]}
+        self.mock_researcher.process.return_value = {
+            "facts": ["Pikachu is an electric type."]
+        }
 
         result = await self.agent_graph.invoke("Tell me about Pikachu.")
         self.assertEqual(result, {"facts": ["Pikachu is an electric type."]})

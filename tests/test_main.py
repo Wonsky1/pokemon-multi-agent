@@ -16,7 +16,10 @@ class TestRootEndpoint(unittest.TestCase):
         """Test that the root endpoint returns a welcome message."""
         response = self.client.get("/")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"message": "Welcome to the Pokémon Multi-Agent System API"})
+        self.assertEqual(
+            response.json(),
+            {"message": "Welcome to the Pokémon Multi-Agent System API"},
+        )
 
 
 class TestChatEndpoint(unittest.IsolatedAsyncioTestCase):
@@ -28,7 +31,9 @@ class TestChatEndpoint(unittest.IsolatedAsyncioTestCase):
     @patch("main.agent_graph")
     async def test_chat_success(self, mock_agent_graph):
         """Test successful response from /chat endpoint."""
-        mock_agent_graph.invoke = AsyncMock(return_value={"response": "Hello from agent"})
+        mock_agent_graph.invoke = AsyncMock(
+            return_value={"response": "Hello from agent"}
+        )
         payload = {"question": "What is Pikachu?"}
         response = self.client.post("/chat", json=payload)
         self.assertEqual(response.status_code, 200)
@@ -39,12 +44,15 @@ class TestChatEndpoint(unittest.IsolatedAsyncioTestCase):
     @patch("main.logger")
     async def test_chat_internal_server_error(self, mock_logger, mock_agent_graph):
         """Test that /chat returns 500 if an exception occurs."""
-        mock_agent_graph.invoke = AsyncMock(side_effect=Exception("Mocked internal error"))
+        mock_agent_graph.invoke = AsyncMock(
+            side_effect=Exception("Mocked internal error")
+        )
         payload = {"question": "Test error"}
         response = self.client.post("/chat", json=payload)
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.json()["detail"], "Mocked internal error")
         mock_logger.error.assert_called()
+
 
 class TestBattleEndpoint(unittest.TestCase):
     def setUp(self):
@@ -66,22 +74,24 @@ class TestBattleEndpoint(unittest.TestCase):
         ]
 
         with patch("main.battle_expert") as mock_battle_expert:
-            mock_battle_expert.process = AsyncMock(return_value={
-                "winner": "pikachu",
-                "reasoning": "Speed advantage"
-            })
+            mock_battle_expert.process = AsyncMock(
+                return_value={"winner": "pikachu", "reasoning": "Speed advantage"}
+            )
 
             response = self.client.get("/battle?pokemon1=pikachu&pokemon2=bulbasaur")
 
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {"winner": "pikachu", "reasoning": "Speed advantage"})
+            self.assertEqual(
+                response.json(), {"winner": "pikachu", "reasoning": "Speed advantage"}
+            )
 
     def test_battle_pokemon_not_found(self):
         with patch("main.battle_expert") as mock_battle_expert:
-            mock_battle_expert.process.side_effect = PokemonNotFoundError("Pokemon not found")
+            mock_battle_expert.process.side_effect = PokemonNotFoundError(
+                "Pokemon not found"
+            )
 
             response = self.client.get("/battle?pokemon1=invilad&pokemon2=invalid")
-
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["winner"], "BATTLE_IMPOSSIBLE")
@@ -98,6 +108,7 @@ class TestBattleEndpoint(unittest.TestCase):
         self.mock_service.get_pokemon_data.side_effect = None
         self.mock_service.get_pokemon_data.reset_mock()
 
+
 class TestLifespan(unittest.IsolatedAsyncioTestCase):
     """Test suite for lifespan startup/shutdown logic."""
 
@@ -106,7 +117,14 @@ class TestLifespan(unittest.IsolatedAsyncioTestCase):
     @patch("main.initialize_pokemon_service")
     @patch("main.shutdown_pokemon_service")
     @patch("main.logger")
-    async def test_lifespan_starts_and_stops(self, mock_logger, mock_shutdown, mock_initialize, mock_get_graph, mock_get_factory):
+    async def test_lifespan_starts_and_stops(
+        self,
+        mock_logger,
+        mock_shutdown,
+        mock_initialize,
+        mock_get_graph,
+        mock_get_factory,
+    ):
         """Test that lifespan starts and stops system services correctly."""
         mock_get_graph.return_value = Mock()
         mock_get_factory.return_value.create_battle_expert.return_value = Mock()

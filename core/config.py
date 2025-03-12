@@ -2,6 +2,7 @@ from typing import Optional
 from pydantic import field_validator, ValidationInfo
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from langchain_core.language_models import BaseChatModel
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
@@ -27,7 +28,7 @@ class Settings(BaseSettings):
 
     LOCAL_DEVELOPMENT: bool = False
 
-    GENERATIVE_MODEL: Optional[ChatGroq] = None
+    GENERATIVE_MODEL: Optional[BaseChatModel] = None
 
     LANGSMITH_TRACING: Optional[str] = None
     LANGSMITH_ENDPOINT: Optional[str] = None
@@ -36,7 +37,7 @@ class Settings(BaseSettings):
 
     @field_validator("GENERATIVE_MODEL")
     def generative_model(
-        cls, value: Optional[ChatGroq], info: ValidationInfo
+        cls, value: Optional[BaseChatModel], info: ValidationInfo
     ) -> Optional[ChatGroq]:
         env_data = info.data
         local_development = env_data.get("LOCAL_DEVELOPMENT")
