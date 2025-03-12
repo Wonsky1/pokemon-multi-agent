@@ -2,7 +2,24 @@ import unittest
 from unittest.mock import AsyncMock, patch, MagicMock
 from langchain_core.messages import HumanMessage
 
+from agents.base import BaseAgent
 from agents.supervisor import SupervisorAgent
+import unittest
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from agents.pokemon_expert import PokemonExpertAgent
+from agents.models import DetailedPokemonBattle, SimplifiedPokemonBattle
+from agents.researcher import ResearcherAgent
+
+from agents.factory import (
+    AgentFactory,
+    get_agent_factory,
+    get_supervisor_agent,
+    get_researcher_agent,
+    get_pokemon_expert_agent,
+    get_battle_expert_agent,
+)
+
 
 # ------------------------------------
 # supervisor.py tests
@@ -109,3 +126,278 @@ class TestSupervisorAgent(unittest.IsolatedAsyncioTestCase):
         messages = [HumanMessage(content="Unusual query")]
         result = await self.agent.process(messages)
         self.assertIsNone(result)
+
+
+# ------------------------------------
+# factory.py tests
+# ------------------------------------
+
+
+class TestAgentFactory(unittest.TestCase):
+    """
+    Test suite for the AgentFactory and dependency providers.
+    """
+
+    def setUp(self):
+        AgentFactory._instances = {}
+        AgentFactory._agent_classes = {}
+        AgentFactory._default_configs = {}
+        AgentFactory.initialize()
+
+    def test_initialize_sets_agent_classes_and_configs(self):
+        """
+        Test AgentFactory.initialize sets expected agent classes and configs.
+        """
+        self.assertIn("supervisor", AgentFactory._agent_classes)
+        self.assertIn("researcher", AgentFactory._agent_classes)
+        self.assertIn("pokemon_expert", AgentFactory._agent_classes)
+
+        self.assertIn("supervisor", AgentFactory._default_configs)
+        self.assertIsInstance(AgentFactory._default_configs["supervisor"], dict)
+
+    def test_get_agent_returns_singleton_instance(self):
+        """
+        Test get_agent returns cached instance if already created.
+        """
+        agent1 = AgentFactory.get_agent("supervisor")
+        agent2 = AgentFactory.get_agent("supervisor")
+        self.assertIs(agent1, agent2)
+
+    def test_get_agent_with_custom_config_returns_new_instance(self):
+        """
+        Test get_agent with kwargs bypasses cache and creates new agent.
+        """
+        default_agent = AgentFactory.get_agent("pokemon_expert")
+        custom_agent = AgentFactory.get_agent("pokemon_expert", response_format="simplified")
+        self.assertIsNot(default_agent, custom_agent)
+
+    def test_get_agent_invalid_type_raises(self):
+        """
+        Test get_agent raises ValueError for unknown agent type.
+        """
+        with self.assertRaises(ValueError):
+            AgentFactory.get_agent("invalid_type")
+
+    def test_register_agent_class_registers_new_agent(self):
+        """
+        Test register_agent_class correctly registers a new agent type.
+        """
+        class MockAgent(BaseAgent):
+            def __init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+            async def process(self, messages):
+                return "mock_result"
+
+        AgentFactory.register_agent_class("mock_agent", MockAgent)
+
+        self.assertIn("mock_agent", AgentFactory._agent_classes)
+        self.assertEqual(AgentFactory._default_configs["mock_agent"], {})
+
+        instance = AgentFactory.get_agent("mock_agent")
+        self.assertIsInstance(instance, MockAgent)
+
+
+    def test_create_battle_expert_with_tool_and_prompt(self):
+        """
+        Test create_battle_expert creates a configured agent with tool and prompt.
+        """
+        mock_agent_cls = MagicMock()
+        mock_instance = MagicMock()
+        mock_agent_cls.return_value = mock_instance
+
+        AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
+
+        agent = AgentFactory.create_battle_expert(
+            response_format="detailed",
+            custom_prompt="Analyze battle strategy"
+        )
+
+        mock_agent_cls.assert_called_once()
+        call_args = mock_agent_cls.call_args[1]
+
+        self.assertEqual(call_args["response_format"], "detailed")
+        self.assertEqual(call_args["prompt"], "Analyze battle strategy")
+        self.assertIn("tools", call_args)
+        self.assertIs(agent, mock_instance)
+
+
+
+
+    def test_create_battle_expert_without_tool(self):
+        """
+        Test create_battle_expert with use_tool=False skips tool injection.
+        """
+        mock_agent_cls = MagicMock()
+        mock_instance = MagicMock()
+        mock_agent_cls.return_value = mock_instance
+
+        AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
+
+        agent = AgentFactory.create_battle_expert(use_tool=False)
+
+        mock_agent_cls.assert_called_once()
+        call_args = mock_agent_cls.call_args[1]
+
+        self.assertEqual(call_args["response_format"], "simplified")
+        self.assertNotIn("prompt", call_args)
+        self.assertEqual(call_args["tools"], [])
+        self.assertIs(agent, mock_instance)
+
+
+    def test_get_agent_factory_returns_singleton(self):
+        """
+        Test get_agent_factory returns same instance across calls.
+        """
+        factory1 = get_agent_factory()
+        factory2 = get_agent_factory()
+        self.assertIs(factory1, factory2)
+
+    def test_get_supervisor_agent_returns_instance(self):
+        """
+        Test get_supervisor_agent returns a valid SupervisorAgent.
+        """
+        agent = get_supervisor_agent()
+        self.assertEqual(agent.__class__.__name__, "SupervisorAgent")
+
+    def test_get_researcher_agent_returns_instance(self):
+        """
+        Test get_researcher_agent returns a valid ResearcherAgent.
+        """
+        agent = get_researcher_agent()
+        self.assertEqual(agent.__class__.__name__, "ResearcherAgent")
+
+    def test_get_pokemon_expert_agent_returns_instance(self):
+        """
+        Test get_pokemon_expert_agent returns a valid PokemonExpertAgent.
+        """
+        agent = get_pokemon_expert_agent()
+        self.assertEqual(agent.__class__.__name__, "PokemonExpertAgent")
+
+    def test_get_battle_expert_agent_returns_custom_battle_expert(self):
+        """
+        Test get_battle_expert_agent returns a valid specialized PokemonExpertAgent.
+        """
+        mock_agent_cls = MagicMock()
+        mock_instance = MagicMock()
+        mock_agent_cls.return_value = mock_instance
+
+        AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
+
+        agent = get_battle_expert_agent(
+            response_format="detailed",
+            custom_prompt="Focus on battle analysis"
+        )
+
+        mock_agent_cls.assert_called_once()
+        call_args = mock_agent_cls.call_args[1]
+
+        self.assertEqual(call_args["response_format"], "detailed")
+        self.assertEqual(call_args["prompt"], "Focus on battle analysis")
+        self.assertIs(agent, mock_instance)
+
+
+# ------------------------------------
+# pokemon_expert.py tests
+# ------------------------------------
+
+
+class TestPokemonExpertAgent(unittest.IsolatedAsyncioTestCase):
+    """
+    Test suite for PokemonExpertAgent in agents.pokemon_expert.
+    """
+
+    @patch("agents.pokemon_expert.create_react_agent")
+    async def test_process_returns_detailed_battle_result(self, mock_create_react_agent):
+        """
+        Test process() returns a DetailedPokemonBattle result.
+        """
+        mock_agent = AsyncMock()
+        mock_create_react_agent.return_value = mock_agent
+
+        expected_result = DetailedPokemonBattle(
+            winner="Pikachu",
+            reasoning="Pikachu is faster.",
+            answer="Pikachu wins the battle due to its speed and effectiveness."
+        )
+        mock_agent.ainvoke.return_value = {"structured_response": expected_result}
+
+        agent = PokemonExpertAgent(llm=MagicMock())
+        result = await agent.process([{"content": "Pikachu vs Squirtle"}])
+
+        self.assertEqual(result, expected_result)
+        mock_agent.ainvoke.assert_awaited_once()
+
+
+    @patch("agents.pokemon_expert.create_react_agent")
+    async def test_process_fallback_on_exception(self, mock_create_react_agent):
+        """
+        Test fallback returns a SimplifiedPokemonBattle on failure.
+        """
+        mock_agent = AsyncMock()
+        mock_agent.ainvoke.side_effect = Exception("LLM error")
+        mock_create_react_agent.return_value = mock_agent
+
+        agent = PokemonExpertAgent(llm=MagicMock())
+        result = await agent.process([{"content": "Invalid input"}])
+
+        self.assertIsInstance(result, SimplifiedPokemonBattle)
+        self.assertEqual(result.winner, "BATTLE_IMPOSSIBLE")
+
+
+# ------------------------------------
+# researcher.py tests
+# ------------------------------------
+
+
+class TestResearcherAgent(unittest.IsolatedAsyncioTestCase):
+    """
+    Test suite for ResearcherAgent in agents.researcher.
+    Covers successful data retrieval and fallback behavior.
+    """
+
+    @patch("agents.researcher.create_react_agent")
+    async def test_process_returns_pokemon_data(self, mock_create_react_agent):
+        """
+        Test process() returns structured Pokémon data.
+        """
+        mock_agent = AsyncMock()
+        mock_create_react_agent.return_value = mock_agent
+
+        expected_data = {
+            "name": "pikachu",
+            "base_stats": {
+                "hp": 35,
+                "attack": 55,
+                "defense": 40,
+                "special_attack": 50,
+                "special_defense": 50,
+                "speed": 90,
+            }
+        }
+
+        mock_agent.ainvoke.return_value = {
+            "structured_response": expected_data
+        }
+
+        agent = ResearcherAgent(llm=MagicMock())
+        result = await agent.process([{"content": "Tell me about Pikachu"}])
+
+        self.assertEqual(result, expected_data)
+        mock_agent.ainvoke.assert_awaited_once()
+
+    @patch("agents.researcher.create_react_agent")
+    async def test_process_returns_default_on_failure(self, mock_create_react_agent):
+        """
+        Test fallback returns default stats on agent failure.
+        """
+        mock_agent = AsyncMock()
+        mock_agent.ainvoke.side_effect = Exception("Tool error")
+        mock_create_react_agent.return_value = mock_agent
+
+        agent = ResearcherAgent(llm=MagicMock())
+        result = await agent.process([{"content": "Unknown Pokémon"}])
+
+        self.assertEqual(result["name"], "NOT_FOUND")
+        self.assertEqual(result["base_stats"]["hp"], 0)
+        self.assertEqual(result["base_stats"]["speed"], 0)
