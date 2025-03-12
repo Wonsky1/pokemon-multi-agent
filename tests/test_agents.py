@@ -83,7 +83,9 @@ class TestSupervisorAgent(unittest.IsolatedAsyncioTestCase):
         mock_response.next = "researcher"
         structured_llm_mock.ainvoke.return_value = mock_response
 
-        self.agent.llm.with_structured_output = MagicMock(return_value=structured_llm_mock)
+        self.agent.llm.with_structured_output = MagicMock(
+            return_value=structured_llm_mock
+        )
 
         messages = [HumanMessage(content="Tell me some Pokémon facts")]
         result = await self.agent.process(messages)
@@ -95,7 +97,7 @@ class TestSupervisorAgent(unittest.IsolatedAsyncioTestCase):
         Test structured routing with 'direct_response' triggering direct response generation.
         """
         self.agent.llm.ainvoke.return_value.content = "invalid"
-    
+
         structured_llm_mock = MagicMock()
         structured_llm_mock.ainvoke = AsyncMock()
 
@@ -103,15 +105,18 @@ class TestSupervisorAgent(unittest.IsolatedAsyncioTestCase):
         mock_response.next = "direct_response"
         structured_llm_mock.ainvoke.return_value = mock_response
 
-        self.agent.llm.with_structured_output = MagicMock(return_value=structured_llm_mock)
+        self.agent.llm.with_structured_output = MagicMock(
+            return_value=structured_llm_mock
+        )
 
         self.agent.llm.ainvoke = AsyncMock()
-        self.agent.llm.ainvoke.return_value.content = "Pikachu is an electric mouse Pokémon."
+        self.agent.llm.ainvoke.return_value.content = (
+            "Pikachu is an electric mouse Pokémon."
+        )
 
         messages = [HumanMessage(content="Who is Pikachu?")]
         result = await self.agent.process(messages)
         self.assertEqual(result, {"answer": "Pikachu is an electric mouse Pokémon."})
-
 
     async def test_invalid_raw_then_invalid_structured_returns_none(self):
         """
@@ -119,9 +124,13 @@ class TestSupervisorAgent(unittest.IsolatedAsyncioTestCase):
         """
         self.agent.llm.ainvoke.side_effect = Exception("Raw failure")
         structured_llm_mock = MagicMock()
-        structured_llm_mock.ainvoke = AsyncMock(side_effect=Exception("Structured failure"))
+        structured_llm_mock.ainvoke = AsyncMock(
+            side_effect=Exception("Structured failure")
+        )
 
-        self.agent.llm.with_structured_output = MagicMock(return_value=structured_llm_mock)
+        self.agent.llm.with_structured_output = MagicMock(
+            return_value=structured_llm_mock
+        )
 
         messages = [HumanMessage(content="Unusual query")]
         result = await self.agent.process(messages)
@@ -168,7 +177,9 @@ class TestAgentFactory(unittest.TestCase):
         Test get_agent with kwargs bypasses cache and creates new agent.
         """
         default_agent = AgentFactory.get_agent("pokemon_expert")
-        custom_agent = AgentFactory.get_agent("pokemon_expert", response_format="simplified")
+        custom_agent = AgentFactory.get_agent(
+            "pokemon_expert", response_format="simplified"
+        )
         self.assertIsNot(default_agent, custom_agent)
 
     def test_get_agent_invalid_type_raises(self):
@@ -182,6 +193,7 @@ class TestAgentFactory(unittest.TestCase):
         """
         Test register_agent_class correctly registers a new agent type.
         """
+
         class MockAgent(BaseAgent):
             def __init__(self, **kwargs):
                 super().__init__(**kwargs)
@@ -197,7 +209,6 @@ class TestAgentFactory(unittest.TestCase):
         instance = AgentFactory.get_agent("mock_agent")
         self.assertIsInstance(instance, MockAgent)
 
-
     def test_create_battle_expert_with_tool_and_prompt(self):
         """
         Test create_battle_expert creates a configured agent with tool and prompt.
@@ -209,8 +220,7 @@ class TestAgentFactory(unittest.TestCase):
         AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
 
         agent = AgentFactory.create_battle_expert(
-            response_format="detailed",
-            custom_prompt="Analyze battle strategy"
+            response_format="detailed", custom_prompt="Analyze battle strategy"
         )
 
         mock_agent_cls.assert_called_once()
@@ -220,9 +230,6 @@ class TestAgentFactory(unittest.TestCase):
         self.assertEqual(call_args["prompt"], "Analyze battle strategy")
         self.assertIn("tools", call_args)
         self.assertIs(agent, mock_instance)
-
-
-
 
     def test_create_battle_expert_without_tool(self):
         """
@@ -243,7 +250,6 @@ class TestAgentFactory(unittest.TestCase):
         self.assertNotIn("prompt", call_args)
         self.assertEqual(call_args["tools"], [])
         self.assertIs(agent, mock_instance)
-
 
     def test_get_agent_factory_returns_singleton(self):
         """
@@ -285,8 +291,7 @@ class TestAgentFactory(unittest.TestCase):
         AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
 
         agent = get_battle_expert_agent(
-            response_format="detailed",
-            custom_prompt="Focus on battle analysis"
+            response_format="detailed", custom_prompt="Focus on battle analysis"
         )
 
         mock_agent_cls.assert_called_once()
@@ -308,7 +313,9 @@ class TestPokemonExpertAgent(unittest.IsolatedAsyncioTestCase):
     """
 
     @patch("agents.pokemon_expert.create_react_agent")
-    async def test_process_returns_detailed_battle_result(self, mock_create_react_agent):
+    async def test_process_returns_detailed_battle_result(
+        self, mock_create_react_agent
+    ):
         """
         Test process() returns a DetailedPokemonBattle result.
         """
@@ -318,7 +325,7 @@ class TestPokemonExpertAgent(unittest.IsolatedAsyncioTestCase):
         expected_result = DetailedPokemonBattle(
             winner="Pikachu",
             reasoning="Pikachu is faster.",
-            answer="Pikachu wins the battle due to its speed and effectiveness."
+            answer="Pikachu wins the battle due to its speed and effectiveness.",
         )
         mock_agent.ainvoke.return_value = {"structured_response": expected_result}
 
@@ -327,7 +334,6 @@ class TestPokemonExpertAgent(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(result, expected_result)
         mock_agent.ainvoke.assert_awaited_once()
-
 
     @patch("agents.pokemon_expert.create_react_agent")
     async def test_process_fallback_on_exception(self, mock_create_react_agent):
@@ -373,12 +379,10 @@ class TestResearcherAgent(unittest.IsolatedAsyncioTestCase):
                 "special_attack": 50,
                 "special_defense": 50,
                 "speed": 90,
-            }
+            },
         }
 
-        mock_agent.ainvoke.return_value = {
-            "structured_response": expected_data
-        }
+        mock_agent.ainvoke.return_value = {"structured_response": expected_data}
 
         agent = ResearcherAgent(llm=MagicMock())
         result = await agent.process([{"content": "Tell me about Pikachu"}])

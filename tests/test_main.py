@@ -109,6 +109,7 @@ class TestChatEndpoint(unittest.IsolatedAsyncioTestCase):
 #         self.mock_service.get_pokemon_data.side_effect = None
 #         self.mock_service.get_pokemon_data.reset_mock()
 
+
 @pytest.fixture
 def client():
     with TestClient(app) as client:
@@ -121,6 +122,7 @@ def mock_pokeapi_service():
         mock_service = AsyncMock()
         mock_service_class.return_value = mock_service
         yield mock_service
+
 
 def test_battle_success(client, mock_pokeapi_service):
     mock_pokeapi_service.get_pokemon_data.side_effect = [
@@ -138,6 +140,7 @@ def test_battle_success(client, mock_pokeapi_service):
         assert response.status_code == 200
         assert response.json() == {"winner": "pikachu", "reasoning": "Speed advantage"}
 
+
 def test_battle_pokemon_not_found(client, mock_pokeapi_service):
     with patch("main.battle_expert") as mock_battle_expert:
         mock_battle_expert.process.side_effect = PokemonNotFoundError(
@@ -150,6 +153,7 @@ def test_battle_pokemon_not_found(client, mock_pokeapi_service):
     assert response.json()["winner"] == "BATTLE_IMPOSSIBLE"
     mock_pokeapi_service.get_pokemon_data.side_effect = None
     mock_pokeapi_service.get_pokemon_data.reset_mock()
+
 
 class TestLifespan(unittest.IsolatedAsyncioTestCase):
     """Test suite for lifespan startup/shutdown logic."""

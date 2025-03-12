@@ -1,4 +1,4 @@
-.PHONY: venv install test clean build run lint run-local black coverage
+.PHONY: venv install tests clean build run lint run-local black coverage test-unittests test-integration
 
 venv:
 	python3 -m venv .venv
@@ -6,10 +6,8 @@ venv:
 install:
 	pip install -r requirements.txt
 
-test:
+tests:
 	pytest -v --cov=. -m "not integration"
-
-test-integration:
 	pytest -v -m integration
 
 coverage:
@@ -33,4 +31,8 @@ lint:
 black:
 	black . --exclude .venv
 
+test-unittests:
+	pytest -v --cov=. -m "not integration"
 
+test-integration:
+	pytest -v -m integration

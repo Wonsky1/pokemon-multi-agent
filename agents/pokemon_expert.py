@@ -41,7 +41,7 @@ class PokemonExpertAgent(BaseAgent):
     async def process(self, messages: List[Dict[str, str]]) -> AbstractPokemonBattle:
         """Process the message using the react agent asynchronously."""
         try:
-            logger.debug(f"Starting Pokémon battle analysis")
+            logger.debug("Starting Pokémon battle analysis")
             result = await self.agent.ainvoke({"messages": messages})
             structured_response: AbstractPokemonBattle = result["structured_response"]
             return structured_response

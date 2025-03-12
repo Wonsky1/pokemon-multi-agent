@@ -45,19 +45,23 @@ class Settings(BaseSettings):
         if local_development:
             model_name = env_data.get("GROQ_MODEL_NAME")
             api_key = env_data.get("GROQ_API_KEY")
-            
+
             if model_name:
                 return ChatGroq(model_name=model_name, api_key=api_key)
             else:
-                raise ValueError("GROQ_MODEL_NAME must be set when LOCAL_DEVELOPMENT is True")
+                raise ValueError(
+                    "GROQ_MODEL_NAME must be set when LOCAL_DEVELOPMENT is True"
+                )
         else:
             model_name = env_data.get("OPENAI_MODEL_NAME")
             api_key = env_data.get("OPENAI_API_KEY")
-            
+
             if model_name:
                 return ChatOpenAI(model_name=model_name, api_key=api_key)
             else:
-                raise ValueError("OPENAI_MODEL_NAME must be set when LOCAL_DEVELOPMENT is False")
+                raise ValueError(
+                    "OPENAI_MODEL_NAME must be set when LOCAL_DEVELOPMENT is False"
+                )
 
 
 settings = Settings()
