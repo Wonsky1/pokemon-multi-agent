@@ -101,7 +101,10 @@ class TestSupervisorAgent(unittest.IsolatedAsyncioTestCase):
         Test behavior when both raw and structured routing fail or return invalid data.
         """
         self.agent.llm.ainvoke.side_effect = Exception("Raw failure")
-        self.agent.llm.with_structured_output.return_value.ainvoke.side_effect = Exception("Structured failure")
+        structured_llm_mock = MagicMock()
+        structured_llm_mock.ainvoke = AsyncMock(side_effect=Exception("Structured failure"))
+
+        self.agent.llm.with_structured_output = MagicMock(return_value=structured_llm_mock)
 
         messages = [HumanMessage(content="Unusual query")]
         result = await self.agent.process(messages)
