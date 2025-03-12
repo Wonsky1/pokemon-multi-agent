@@ -7,7 +7,12 @@ from agents.pokemon_expert import PokemonExpertAgent
 from api.models import ChatRequest
 from core.agent_graph import AgentGraph, get_agent_graph
 from core.exceptions import PokemonNotFoundError
-from tools.pokeapi import PokeAPIService, get_pokemon_service, initialize_pokemon_service, shutdown_pokemon_service
+from tools.pokeapi import (
+    PokeAPIService,
+    get_pokemon_service,
+    initialize_pokemon_service,
+    shutdown_pokemon_service,
+)
 from core.logging import configure_all_loggers, get_logger
 
 configure_all_loggers(debug_mode=False)

@@ -121,6 +121,7 @@ class PokeAPIService:
         except httpx.HTTPError as e:
             raise ValueError(f"Error: Type '{type_name}' not found. Details: {str(e)}")
 
+
 pokemon_service = None
 
 

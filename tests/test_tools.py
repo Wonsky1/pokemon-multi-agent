@@ -8,7 +8,6 @@ from tools.langchain_tools import AsyncPokeapiTool, AsyncPokeapiToolWithTypes
 from tools.langchain_tools import PokemonInput
 
 
-
 # ------------------------------------
 # pokeapi.py tests
 # ------------------------------------
@@ -45,16 +44,18 @@ class TestPokeAPIService(unittest.IsolatedAsyncioTestCase):
     @patch("tools.pokeapi.httpx.AsyncClient.get")
     async def test_get_pokemon_data_with_cache(self, mock_get):
         mock_response = AsyncMock()
-        mock_response.json = Mock(return_value={
-            "id": 25,
-            "name": "pikachu",
-            "base_experience": 112,
-            "height": 4,
-            "weight": 60,
-            "abilities": [{"ability": {"name": "static"}}],
-            "stats": [{"stat": {"name": "speed"}, "base_stat": 90}],
-            "types": [{"type": {"name": "electric"}}],
-        })
+        mock_response.json = Mock(
+            return_value={
+                "id": 25,
+                "name": "pikachu",
+                "base_experience": 112,
+                "height": 4,
+                "weight": 60,
+                "abilities": [{"ability": {"name": "static"}}],
+                "stats": [{"stat": {"name": "speed"}, "base_stat": 90}],
+                "types": [{"type": {"name": "electric"}}],
+            }
+        )
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -93,14 +94,16 @@ class TestPokeAPIService(unittest.IsolatedAsyncioTestCase):
     @patch("tools.pokeapi.httpx.AsyncClient.get")
     async def test_get_type_data_with_cache(self, mock_get):
         mock_response = AsyncMock()
-        mock_response.json = Mock(return_value={
-            "id": 13,
-            "name": "electric",
-            "damage_relations": {
-                "double_damage_to": [{"name": "water"}],
-                "half_damage_from": [{"name": "electric"}],
-            },
-        })
+        mock_response.json = Mock(
+            return_value={
+                "id": 13,
+                "name": "electric",
+                "damage_relations": {
+                    "double_damage_to": [{"name": "water"}],
+                    "half_damage_from": [{"name": "electric"}],
+                },
+            }
+        )
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -127,18 +130,22 @@ class TestPokeAPIService(unittest.IsolatedAsyncioTestCase):
 
     @patch("tools.pokeapi.PokeAPIService._fetch_type_data")
     @patch("tools.pokeapi.httpx.AsyncClient.get")
-    async def test_get_pokemon_data_with_type_details(self, mock_get, mock_fetch_type_data):
+    async def test_get_pokemon_data_with_type_details(
+        self, mock_get, mock_fetch_type_data
+    ):
         mock_response = AsyncMock()
-        mock_response.json = Mock(return_value={
-            "id": 25,
-            "name": "pikachu",
-            "base_experience": 112,
-            "height": 4,
-            "weight": 60,
-            "abilities": [{"ability": {"name": "static"}}],
-            "stats": [{"stat": {"name": "speed"}, "base_stat": 90}],
-            "types": [{"type": {"name": "electric"}}],
-        })
+        mock_response.json = Mock(
+            return_value={
+                "id": 25,
+                "name": "pikachu",
+                "base_experience": 112,
+                "height": 4,
+                "weight": 60,
+                "abilities": [{"ability": {"name": "static"}}],
+                "stats": [{"stat": {"name": "speed"}, "base_stat": 90}],
+                "types": [{"type": {"name": "electric"}}],
+            }
+        )
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
 
@@ -176,7 +183,9 @@ class TestPokeAPIService(unittest.IsolatedAsyncioTestCase):
             "charmander_False": {},
         }
 
-        with patch.object(self.service, '_fetch_pokemon_data', new_callable=AsyncMock) as mock_fetch:
+        with patch.object(
+            self.service, "_fetch_pokemon_data", new_callable=AsyncMock
+        ) as mock_fetch:
             mock_fetch.return_value = {"id": 7, "name": "squirtle"}
 
             await self.service.get_pokemon_data("squirtle")
@@ -195,7 +204,9 @@ class TestPokeAPIService(unittest.IsolatedAsyncioTestCase):
         mock_get.assert_awaited_once()
 
     async def test_service_close(self):
-        with patch.object(self.service.client, 'aclose', new_callable=AsyncMock) as mock_aclose:
+        with patch.object(
+            self.service.client, "aclose", new_callable=AsyncMock
+        ) as mock_aclose:
             await self.service.close()
             mock_aclose.assert_awaited_once()
 
@@ -213,7 +224,9 @@ class TestGlobalPokemonServiceLifecycle(unittest.IsolatedAsyncioTestCase):
 
     async def test_shutdown_pokemon_service_closes_instance(self):
         pokeapi.initialize_pokemon_service()
-        with patch.object(pokeapi.pokemon_service, 'close', new_callable=AsyncMock) as mock_close:
+        with patch.object(
+            pokeapi.pokemon_service, "close", new_callable=AsyncMock
+        ) as mock_close:
             await pokeapi.shutdown_pokemon_service()
             mock_close.assert_awaited_once()
 
@@ -274,17 +287,22 @@ class TestAsyncPokeapiToolWithTypes(unittest.IsolatedAsyncioTestCase):
         mock_service = AsyncMock()
         mock_service.get_pokemon_data.return_value = {
             "name": "pikachu",
-            "type_details": {"electric": {"double_damage_to": [{"name": "water"}]}}
+            "type_details": {"electric": {"double_damage_to": [{"name": "water"}]}},
         }
         mock_get_service.return_value = mock_service
 
         result = await self.tool._arun(pokemon_name="pikachu")
 
-        self.assertEqual(result, {
-            "name": "pikachu",
-            "type_details": {"electric": {"double_damage_to": [{"name": "water"}]}}
-        })
-        mock_service.get_pokemon_data.assert_awaited_once_with("pikachu", get_type_data=True)
+        self.assertEqual(
+            result,
+            {
+                "name": "pikachu",
+                "type_details": {"electric": {"double_damage_to": [{"name": "water"}]}},
+            },
+        )
+        mock_service.get_pokemon_data.assert_awaited_once_with(
+            "pikachu", get_type_data=True
+        )
 
     def test_run_raises_not_implemented_error(self):
         """Test that _run raises NotImplementedError as it should not be used."""
