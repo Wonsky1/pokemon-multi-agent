@@ -5,8 +5,7 @@ from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 
 from core.exceptions import PokemonNotFoundError
-from tools.pokeapi import get_pokemon_service
-
+from core.di import get_pokemon_service
 
 class PokemonInput(BaseModel):
     """Input for the Pokemon tool."""

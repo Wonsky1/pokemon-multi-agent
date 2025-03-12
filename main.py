@@ -2,18 +2,12 @@ from contextlib import asynccontextmanager
 from http.client import HTTPException
 from fastapi import FastAPI, Depends
 from prompts import BATTLE_EXPERT_PROMPT
-from langchain_core.messages import HumanMessage
 from agents.pokemon_expert import PokemonExpertAgent
-from agents.factory import AgentFactory
+from core.di import get_agent_factory, get_pokemon_service, initialize_pokemon_service, shutdown_pokemon_service, get_agent_graph
 from api.models import ChatRequest
 from core.agent_graph import AgentGraph
 from core.exceptions import PokemonNotFoundError
-from tools.pokeapi import (
-    PokeAPIService,
-    get_pokemon_service,
-    initialize_pokemon_service,
-    shutdown_pokemon_service,
-)
+from tools.pokeapi import PokeAPIService
 
 agent_graph: AgentGraph | None = None
 battle_expert: PokemonExpertAgent | None = None
@@ -24,10 +18,10 @@ async def lifespan(app: FastAPI):
     await initialize_pokemon_service()
 
     global agent_graph
-    agent_graph = AgentGraph()
+    agent_graph = get_agent_graph()
 
     global battle_expert
-    battle_expert = AgentFactory.create_battle_expert(
+    battle_expert = get_agent_factory().create_battle_expert(
         custom_prompt=BATTLE_EXPERT_PROMPT
     )
 

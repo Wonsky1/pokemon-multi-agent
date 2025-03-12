@@ -1,9 +1,7 @@
 from typing import Dict, Optional, Type, Any
 from langchain.agents import Tool
 from agents.base import BaseAgent
-from agents.pokemon_expert import PokemonExpertAgent
-from agents.researcher import ResearcherAgent
-from agents.supervisor import SupervisorAgent
+from core.di import get_pokemon_expert_agent, get_researcher_agent, get_supervisor_agent
 from tools.langchain_tools import async_pokeapi_tool, async_pokeapi_tool_with_types
 from core.config import settings
 
@@ -14,9 +12,9 @@ class AgentFactory:
     _instances: Dict[str, BaseAgent] = {}
 
     _agent_classes = {
-        "supervisor": SupervisorAgent,
-        "researcher": ResearcherAgent,
-        "pokemon_expert": PokemonExpertAgent,
+        "supervisor": get_supervisor_agent(),
+        "researcher": get_researcher_agent(),
+        "pokemon_expert": get_pokemon_expert_agent(),
     }
 
     _default_configs = {
