@@ -86,7 +86,7 @@ class PokeAPIService:
 
         except httpx.HTTPError as e:
             raise PokemonNotFoundError(
-                f"TOOL ERROR: Pokémon '{pokemon_name}' not found. Details: {str(e)}"
+                f"SERVICE ERROR: Pokémon '{pokemon_name}' not found. Details: {str(e)}"
             )
 
     async def get_type_data(self, type_name: str) -> Dict[str, Any]:

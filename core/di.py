@@ -10,7 +10,7 @@ agent_factory = None
 agent_graph = None
 
 
-async def initialize_pokemon_service() -> None:
+def initialize_pokemon_service() -> None:
     """Initialize the global Pokemon service."""
     global pokemon_service
     pokemon_service = PokeAPIService()
@@ -23,7 +23,7 @@ async def shutdown_pokemon_service() -> None:
         await pokemon_service.close()
 
 
-async def get_pokemon_service() -> PokeAPIService:
+def get_pokemon_service() -> PokeAPIService:
     """Dependency injection provider for PokeAPIService."""
     global pokemon_service
     if pokemon_service is None:
@@ -31,7 +31,7 @@ async def get_pokemon_service() -> PokeAPIService:
     return pokemon_service
 
 
-async def get_agent_factory() -> AgentFactory:
+def get_agent_factory() -> AgentFactory:
     """Dependency injection provider for the AgentFactory.
     Ensures singleton behavior.
     """

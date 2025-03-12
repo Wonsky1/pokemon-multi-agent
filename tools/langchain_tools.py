@@ -21,11 +21,9 @@ class AsyncPokeapiTool(BaseTool):
 
     async def _arun(self, pokemon_name: str) -> Dict[str, Any] | str:
         """Run the tool asynchronously."""
-        try:
-            service = await get_pokemon_service()
-            return await service.get_pokemon_data(pokemon_name.lower())
-        except PokemonNotFoundError as e:
-            return str(e)
+        service = get_pokemon_service()
+        return await service.get_pokemon_data(pokemon_name.lower())
+
 
     def _run(self, pokemon_name: str) -> Dict[str, Any] | str:
         """This shouldn't be called but is required for the interface."""
@@ -41,13 +39,10 @@ class AsyncPokeapiToolWithTypes(BaseTool):
 
     async def _arun(self, pokemon_name: str) -> Dict[str, Any] | str:
         """Run the tool asynchronously."""
-        try:
-            service = await get_pokemon_service()
-            return await service.get_pokemon_data(
-                pokemon_name.lower(), get_type_data=True
-            )
-        except PokemonNotFoundError as e:
-            return str(e)
+        service = get_pokemon_service()
+        return await service.get_pokemon_data(
+            pokemon_name.lower(), get_type_data=True
+        )
 
     def _run(self, pokemon_name: str) -> Dict[str, Any] | str:
         """This shouldn't be called but is required for the interface."""

@@ -15,7 +15,7 @@ battle_expert: PokemonExpertAgent | None = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await initialize_pokemon_service()
+    initialize_pokemon_service()
 
     global agent_graph
     agent_graph = get_agent_graph()

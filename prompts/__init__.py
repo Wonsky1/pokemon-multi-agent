@@ -30,13 +30,13 @@ EXPERT_AGENT_PROMPT = """
         STEP 4: BEFORE ANY ANALYSIS, explicitly verify if each Pokémon exists.
         STEP 5: If ANY Pokémon returns an error or "not found" message from the tool, you MUST STOP and return ONLY this JSON:
         {
-            "winner": "BATTLE_IMPOSSIBLE",
+            "answer": "BATTLE_IMPOSSIBLE",
             "reasoning": "Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names."
         }
 
         STEP 6: If ALL Pokémon exist, proceed with the analysis and return the winner and reasoning in this format:
         {
-            "winner": "[Winning Pokémon Name]",
+            "answer": "[Winning Pokémon Name and a short explanation]",
             "reasoning": "[Detailed reasoning explaining why this Pokémon wins, mentioning both competitors]"
         }
 
