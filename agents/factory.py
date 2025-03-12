@@ -2,6 +2,7 @@ from typing import Dict, Optional, Type, Any
 from agents.base import BaseAgent
 from core.config import settings
 
+
 class AgentFactory:
     """Factory for creating agent instances with async support."""
 
@@ -49,7 +50,7 @@ class AgentFactory:
         """
         if not cls._agent_classes:
             cls.initialize()
-            
+
         if agent_type not in cls._agent_classes:
             raise ValueError(f"Unknown agent type: {agent_type}")
 
@@ -93,8 +94,11 @@ class AgentFactory:
 
     @classmethod
     def create_battle_expert(
-        cls, response_format: str = "simplified", custom_prompt: Optional[str] = None, use_tool: bool = True
-    ) -> 'PokemonExpertAgent':
+        cls,
+        response_format: str = "simplified",
+        custom_prompt: Optional[str] = None,
+        use_tool: bool = True,
+    ) -> "PokemonExpertAgent":
         """
         Create a specialized battle expert agent.
 
@@ -108,6 +112,7 @@ class AgentFactory:
         tools = []
         if use_tool:
             from tools.langchain_tools import async_pokeapi_tool_with_types
+
             tools = [async_pokeapi_tool_with_types]
 
         battle_expert_config = {

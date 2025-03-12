@@ -20,7 +20,7 @@ class AgentGraph:
         self.llm = settings.GENERATIVE_MODEL
 
         from core.di import get_agent_factory
-        
+
         factory = get_agent_factory()
         self.supervisor = factory.get_agent("supervisor")
         self.researcher = factory.get_agent("researcher")

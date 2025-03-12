@@ -12,6 +12,7 @@ logger = get_logger("agents.researcher")
 
 class ResearcherAgent(BaseAgent):
     """Agent responsible for fetching and providing data from external sources."""
+
     def __init__(self, llm: BaseChatModel):
         """Initialize the researcher agent."""
         super().__init__(llm)

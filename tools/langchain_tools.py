@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 from core.exceptions import PokemonNotFoundError
 from core.di import get_pokemon_service
 
+
 class PokemonInput(BaseModel):
     """Input for the Pokemon tool."""
 
@@ -24,7 +25,6 @@ class AsyncPokeapiTool(BaseTool):
         service = get_pokemon_service()
         return await service.get_pokemon_data(pokemon_name.lower())
 
-
     def _run(self, pokemon_name: str) -> Dict[str, Any] | str:
         """This shouldn't be called but is required for the interface."""
         raise NotImplementedError("This tool only supports async operation")
@@ -40,9 +40,7 @@ class AsyncPokeapiToolWithTypes(BaseTool):
     async def _arun(self, pokemon_name: str) -> Dict[str, Any] | str:
         """Run the tool asynchronously."""
         service = get_pokemon_service()
-        return await service.get_pokemon_data(
-            pokemon_name.lower(), get_type_data=True
-        )
+        return await service.get_pokemon_data(pokemon_name.lower(), get_type_data=True)
 
     def _run(self, pokemon_name: str) -> Dict[str, Any] | str:
         """This shouldn't be called but is required for the interface."""

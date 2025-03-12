@@ -34,26 +34,26 @@ def setup_logger(
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.propagate = propagate
-    
+
     if logger.handlers:
         logger.handlers.clear()
-    
+
     formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt=DATE_FORMAT)
-    
+
     if file_path:
         file_path.parent.mkdir(exist_ok=True, parents=True)
-        
+
         file_handler = logging.FileHandler(file_path)
         file_handler.setFormatter(formatter)
         file_handler.setLevel(level)
         logger.addHandler(file_handler)
-    
+
     if console:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
         console_handler.setLevel(level)
         logger.addHandler(console_handler)
-    
+
     return logger
 
 
@@ -65,7 +65,7 @@ def configure_all_loggers(debug_mode: bool = False):
         debug_mode: If True, sets all loggers to DEBUG level
     """
     log_level = logging.DEBUG if debug_mode else logging.INFO
-    
+
     root_logger = setup_logger(
         name="",
         level=log_level,
@@ -73,7 +73,7 @@ def configure_all_loggers(debug_mode: bool = False):
         console=True,
         propagate=False,
     )
-    
+
     setup_logger(
         name="agents",
         level=log_level,
@@ -81,7 +81,7 @@ def configure_all_loggers(debug_mode: bool = False):
         console=False,
         propagate=True,
     )
-    
+
     setup_logger(
         name="api",
         level=log_level,
@@ -89,7 +89,7 @@ def configure_all_loggers(debug_mode: bool = False):
         console=False,
         propagate=True,
     )
-    
+
     setup_logger(
         name="tools",
         level=log_level,
@@ -97,20 +97,20 @@ def configure_all_loggers(debug_mode: bool = False):
         console=False,
         propagate=True,
     )
-    
+
     uvicorn_access_logger = logging.getLogger("uvicorn.access")
     uvicorn_error_logger = logging.getLogger("uvicorn.error")
-    
+
     formatter = logging.Formatter(fmt=LOG_FORMAT, datefmt=DATE_FORMAT)
-    
+
     for uvicorn_logger in (uvicorn_access_logger, uvicorn_error_logger):
         uvicorn_logger.handlers.clear()
         uvicorn_logger.setLevel(log_level)
-        
+
         file_handler = logging.FileHandler(API_LOG_FILE)
         file_handler.setFormatter(formatter)
         uvicorn_logger.addHandler(file_handler)
-        
+
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setFormatter(formatter)
         uvicorn_logger.addHandler(console_handler)

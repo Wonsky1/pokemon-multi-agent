@@ -19,6 +19,7 @@ logger = get_logger("agents.pokemon_expert")
 
 class PokemonExpertAgent(BaseAgent):
     """Agent specialized in Pokémon battle analysis with async support."""
+
     def __init__(
         self,
         llm: BaseChatModel,

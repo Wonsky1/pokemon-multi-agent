@@ -3,7 +3,13 @@ from http import HTTPStatus
 from fastapi import FastAPI, Depends, HTTPException
 from prompts import BATTLE_EXPERT_PROMPT
 from agents.pokemon_expert import PokemonExpertAgent
-from core.di import get_agent_factory, get_pokemon_service, initialize_pokemon_service, shutdown_pokemon_service, get_agent_graph
+from core.di import (
+    get_agent_factory,
+    get_pokemon_service,
+    initialize_pokemon_service,
+    shutdown_pokemon_service,
+    get_agent_graph,
+)
 from api.models import ChatRequest
 from core.agent_graph import AgentGraph
 from core.exceptions import PokemonNotFoundError
@@ -30,7 +36,7 @@ async def lifespan(app: FastAPI):
         custom_prompt=BATTLE_EXPERT_PROMPT,
         use_tool=False,
     )
-    
+
     logger.info("System initialization complete")
     yield
 
@@ -69,18 +75,22 @@ async def battle(
     """Battle endpoint."""
     try:
         logger.info(f"Processing battle request: {pokemon1} vs {pokemon2}")
-        pokemon1_data = await pokemon_service.get_pokemon_data(pokemon1, get_type_data=True)
+        pokemon1_data = await pokemon_service.get_pokemon_data(
+            pokemon1, get_type_data=True
+        )
         logger.debug(f"Retrieved data for {pokemon1}")
-        
-        pokemon2_data = await pokemon_service.get_pokemon_data(pokemon2, get_type_data=True)
+
+        pokemon2_data = await pokemon_service.get_pokemon_data(
+            pokemon2, get_type_data=True
+        )
         logger.debug(f"Retrieved data for {pokemon2}")
-        
+
         query = f"Who would win in a battle, {pokemon1}: {pokemon1_data}\nor {pokemon2}: {pokemon2_data}?"
         messages = [{"role": "human", "content": query}]
-        
+
         logger.debug(f"Sending battle analysis query to expert agent")
         result = await battle_expert.process(messages)
-        
+
         logger.info(f"Battle request processed successfully")
         return result
 
