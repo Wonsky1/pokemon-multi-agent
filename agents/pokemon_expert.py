@@ -1,14 +1,19 @@
 from typing import List, Dict, Any
 
-from agents.models import AbstractPokemonBattle, DetailedPokemonBattle, SimplifiedPokemonBattle
+from agents.models import (
+    AbstractPokemonBattle,
+    DetailedPokemonBattle,
+    SimplifiedPokemonBattle,
+)
 from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 from langchain.agents import Tool
 
+
 class PokemonExpertAgent(BaseAgent):
     """Agent specialized in Pokémon battle analysis with async support."""
-    
+
     AGENT_PROMPT = """
         You are a Pokémon expert analyzing battle scenarios. 
 
@@ -47,12 +52,24 @@ class PokemonExpertAgent(BaseAgent):
 
         Make sure to follow these instructions precisely.
     """
-    
-    def __init__(self, llm, tools: List[Tool] = [async_pokeapi_tool_with_types], prompt: str = AGENT_PROMPT, response_format: str = "detailed"):
+
+    def __init__(
+        self,
+        llm,
+        tools: List[Tool] = [async_pokeapi_tool_with_types],
+        prompt: str = AGENT_PROMPT,
+        response_format: str = "detailed",
+    ):
         """Initialize the Pokémon expert agent."""
         super().__init__(llm)
-        response_format = DetailedPokemonBattle if response_format == "detailed" else SimplifiedPokemonBattle
-        self.agent = create_react_agent(llm, tools=tools, prompt=prompt, response_format=response_format)
+        response_format = (
+            DetailedPokemonBattle
+            if response_format == "detailed"
+            else SimplifiedPokemonBattle
+        )
+        self.agent = create_react_agent(
+            llm, tools=tools, prompt=prompt, response_format=response_format
+        )
 
     async def process(self, messages: List[Dict[str, str]]) -> AbstractPokemonBattle:
         """Process the message using the react agent asynchronously."""
@@ -63,5 +80,5 @@ class PokemonExpertAgent(BaseAgent):
         except Exception as e:
             return SimplifiedPokemonBattle(
                 winner="BATTLE_IMPOSSIBLE",
-                reasoning="Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names."
+                reasoning="Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names.",
             )

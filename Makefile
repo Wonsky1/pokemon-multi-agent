@@ -18,3 +18,7 @@ run-local:
 lint:
 	flake8 --exclude .venv
 
+black:
+	black . --exclude .venv
+
+

@@ -4,8 +4,10 @@ from tools.langchain_tools import async_pokeapi_tool
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 
+
 class ResearcherAgent(BaseAgent):
     """Agent responsible for fetching and providing data from external sources."""
+
     AGENT_PROMPT = """
         You are a researcher. When asked about Pokémon, use the provided tool to fetch data from the PokéAPI. Provide a clear, comprehensive answer that directly addresses the user's question.
 
@@ -27,12 +29,18 @@ class ResearcherAgent(BaseAgent):
         DO NOT correct any misspellings, look for only the exact Pokémon name provided.
         DO NOT make up or hallucinate stats for Pokémon that don't exist. 
     """
+
     def __init__(self, llm):
         """Initialize the researcher agent."""
         super().__init__(llm)
-                
-        self.agent = create_react_agent(llm, tools=[async_pokeapi_tool], prompt=self.AGENT_PROMPT, response_format=PokemonData)
-    
+
+        self.agent = create_react_agent(
+            llm,
+            tools=[async_pokeapi_tool],
+            prompt=self.AGENT_PROMPT,
+            response_format=PokemonData,
+        )
+
     async def process(self, messages: List[Dict[str, str]]) -> dict:
         """Process the message using the react agent asynchronously."""
         try:
@@ -47,6 +55,6 @@ class ResearcherAgent(BaseAgent):
                     "defense": 0,
                     "special_attack": 0,
                     "special_defense": 0,
-                    "speed": 0
-                }
+                    "speed": 0,
+                },
             }

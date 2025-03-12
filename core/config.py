@@ -38,4 +38,5 @@ class Settings(BaseSettings):
 
         return ChatGroq(model_name=model_name)
 
+
 settings = Settings()
