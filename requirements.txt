@@ -1,11 +1,19 @@
+# LangChain and related packages
 langchain
 langgraph
+langchain_groq
+langchain-openai
+
+# FastAPI and related packages
 fastapi
 uvicorn
+
+# Testing and HTTP packages
 pytest
+pytest-cov
 httpx
+
+# Environment and settings packages
 python-dotenv
 pydantic
 pydantic-settings
-langchain_groq
-langchain-openai
