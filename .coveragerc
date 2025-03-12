@@ -9,6 +9,7 @@ omit =
     */core/exceptions.py
     */api/models.py
     */core/logging.py
+    */agents/models.py
 
 branch = True
 
