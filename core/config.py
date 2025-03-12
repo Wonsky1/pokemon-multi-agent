@@ -38,11 +38,9 @@ class Settings(BaseSettings):
     @field_validator("GENERATIVE_MODEL")
     def generative_model(
         cls, value: Optional[BaseChatModel], info: ValidationInfo
-    ) -> Optional[BaseChatModel]:  # Changed return type to be more generic
+    ) -> Optional[BaseChatModel]:
         env_data = info.data
         local_development = env_data.get("LOCAL_DEVELOPMENT")
-        print(f"local_development: {local_development}")
-        print(f"env_data: {env_data}")
 
         if local_development:
             model_name = env_data.get("GROQ_MODEL_NAME")
