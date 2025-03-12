@@ -120,3 +120,26 @@ class PokeAPIService:
 
         except httpx.HTTPError as e:
             raise ValueError(f"Error: Type '{type_name}' not found. Details: {str(e)}")
+
+pokemon_service = None
+
+
+def initialize_pokemon_service() -> None:
+    """Initialize the global Pokemon service."""
+    global pokemon_service
+    pokemon_service = PokeAPIService()
+
+
+async def shutdown_pokemon_service() -> None:
+    """Shutdown the global Pokemon service."""
+    global pokemon_service
+    if pokemon_service:
+        await pokemon_service.close()
+
+
+def get_pokemon_service() -> PokeAPIService:
+    """Dependency injection provider for PokeAPIService."""
+    global pokemon_service
+    if pokemon_service is None:
+        pokemon_service = PokeAPIService()
+    return pokemon_service

@@ -1,19 +1,13 @@
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 from fastapi import FastAPI, Depends, HTTPException
+from agents.factory import get_agent_factory
 from prompts import BATTLE_EXPERT_PROMPT
 from agents.pokemon_expert import PokemonExpertAgent
-from core.di import (
-    get_agent_factory,
-    get_pokemon_service,
-    initialize_pokemon_service,
-    shutdown_pokemon_service,
-    get_agent_graph,
-)
 from api.models import ChatRequest
-from core.agent_graph import AgentGraph
+from core.agent_graph import AgentGraph, get_agent_graph
 from core.exceptions import PokemonNotFoundError
-from tools.pokeapi import PokeAPIService
+from tools.pokeapi import PokeAPIService, get_pokemon_service, initialize_pokemon_service, shutdown_pokemon_service
 from core.logging import configure_all_loggers, get_logger
 
 configure_all_loggers(debug_mode=False)

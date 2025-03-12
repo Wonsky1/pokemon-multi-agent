@@ -1,8 +1,8 @@
-from typing import Dict, Any, List, Literal
+from typing import Dict, Any, Literal
 from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import MessagesState, END, StateGraph, START
 from langgraph.types import Command
-from agents.models import PokemonData
+from agents.factory import get_agent_factory
 from core.config import settings
 
 
@@ -18,9 +18,6 @@ class AgentGraph:
     def __init__(self):
         """Initialize the agent graph."""
         self.llm = settings.GENERATIVE_MODEL
-
-        from core.di import get_agent_factory
-
         factory = get_agent_factory()
         self.supervisor = factory.get_agent("supervisor")
         self.researcher = factory.get_agent("researcher")
@@ -94,3 +91,14 @@ class AgentGraph:
             return structured_output
         else:
             return {"answer": last_message.content}
+
+
+agent_graph = None
+
+
+def get_agent_graph() -> AgentGraph:
+    """Dependency provider for the AgentGraph."""
+    global agent_graph
+    if agent_graph is None:
+        agent_graph = AgentGraph()
+    return agent_graph

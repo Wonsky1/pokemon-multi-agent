@@ -3,8 +3,7 @@ from typing_extensions import Literal
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 
-from core.exceptions import PokemonNotFoundError
-from core.di import get_pokemon_service
+from tools.pokeapi import get_pokemon_service
 
 
 class PokemonInput(BaseModel):

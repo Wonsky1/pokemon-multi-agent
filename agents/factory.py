@@ -1,6 +1,12 @@
 from typing import Dict, Optional, Type, Any
 from agents.base import BaseAgent
+from agents.pokemon_expert import PokemonExpertAgent
 from core.config import settings
+from tools.langchain_tools import async_pokeapi_tool_with_types
+from agents.supervisor import SupervisorAgent
+from agents.researcher import ResearcherAgent
+from agents.pokemon_expert import PokemonExpertAgent
+from tools.langchain_tools import async_pokeapi_tool
 
 
 class AgentFactory:
@@ -13,11 +19,6 @@ class AgentFactory:
     @classmethod
     def initialize(cls):
         """Initialize agent classes and configurations - called after imports are resolved."""
-        from agents.supervisor import SupervisorAgent
-        from agents.researcher import ResearcherAgent
-        from agents.pokemon_expert import PokemonExpertAgent
-        from tools.langchain_tools import async_pokeapi_tool
-
         cls._agent_classes = {
             "supervisor": SupervisorAgent,
             "researcher": ResearcherAgent,
@@ -98,7 +99,7 @@ class AgentFactory:
         response_format: str = "simplified",
         custom_prompt: Optional[str] = None,
         use_tool: bool = True,
-    ) -> "PokemonExpertAgent":
+    ) -> PokemonExpertAgent:
         """
         Create a specialized battle expert agent.
 
@@ -111,8 +112,6 @@ class AgentFactory:
         """
         tools = []
         if use_tool:
-            from tools.langchain_tools import async_pokeapi_tool_with_types
-
             tools = [async_pokeapi_tool_with_types]
 
         battle_expert_config = {
@@ -124,3 +123,48 @@ class AgentFactory:
             battle_expert_config["prompt"] = custom_prompt
 
         return cls.get_agent("pokemon_expert", **battle_expert_config)
+
+agent_factory = None
+
+
+def get_agent_factory() -> AgentFactory:
+    """Dependency injection provider for the AgentFactory.
+    Ensures singleton behavior.
+    """
+    global agent_factory
+    if agent_factory is None:
+        agent_factory = AgentFactory()
+    return agent_factory
+
+
+def get_supervisor_agent(
+    factory: AgentFactory = get_agent_factory(),
+):
+    """Dependency provider for the Supervisor agent."""
+    return factory.get_agent("supervisor")
+
+
+def get_researcher_agent(
+    factory: AgentFactory = get_agent_factory(),
+):
+    """Dependency provider for the Researcher agent."""
+    return factory.get_agent("researcher")
+
+
+def get_pokemon_expert_agent(
+    factory: AgentFactory = get_agent_factory(),
+    response_format: str = "detailed",
+):
+    """Dependency provider for the Pokemon Expert agent."""
+    return factory.get_agent("pokemon_expert", response_format=response_format)
+
+
+def get_battle_expert_agent(
+    factory: AgentFactory = get_agent_factory(),
+    response_format: str = "simplified",
+    custom_prompt: str = None,
+):
+    """Dependency provider for a specialized Battle Expert agent."""
+    return factory.create_battle_expert(
+        response_format=response_format, custom_prompt=custom_prompt
+    )
