@@ -7,7 +7,10 @@ install:
 	pip install -r requirements.txt
 
 test:
-	pytest -v --cov=.
+	pytest -v --cov=. -m "not integration"
+
+test-integration:
+	pytest -v -m integration
 
 coverage:
 	coverage report
