@@ -25,6 +25,5 @@ jobs:
           pytest -v -m "not integration"
           pytest -v -m "integration"
         env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GROQ_MODEL_NAME: ${{ secrets.GROQ_MODEL_NAME }}
-          LOCAL_DEVELOPMENT: ${{ secrets.LOCAL_DEVELOPMENT }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL_NAME: ${{ secrets.OPENAI_MODEL_NAME }}
