@@ -10,13 +10,14 @@ from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 from langchain.agents import Tool
+from langchain_core.language_models import BaseChatModel
 
 
 class PokemonExpertAgent(BaseAgent):
     """Agent specialized in Pokémon battle analysis with async support."""
     def __init__(
         self,
-        llm,
+        llm: BaseChatModel,
         tools: List[Tool] = [async_pokeapi_tool_with_types],
         prompt: str = EXPERT_AGENT_PROMPT,
         response_format: str = "detailed",

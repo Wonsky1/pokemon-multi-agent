@@ -4,11 +4,12 @@ from prompts import RESEARCHER_AGENT_PROMPT
 from tools.langchain_tools import async_pokeapi_tool
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
+from langchain_core.language_models import BaseChatModel
 
 
 class ResearcherAgent(BaseAgent):
     """Agent responsible for fetching and providing data from external sources."""
-    def __init__(self, llm):
+    def __init__(self, llm: BaseChatModel):
         """Initialize the researcher agent."""
         super().__init__(llm)
 
