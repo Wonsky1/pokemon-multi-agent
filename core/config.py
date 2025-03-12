@@ -38,18 +38,28 @@ class Settings(BaseSettings):
     @field_validator("GENERATIVE_MODEL")
     def generative_model(
         cls, value: Optional[BaseChatModel], info: ValidationInfo
-    ) -> Optional[BaseChatModel]:
+    ) -> Optional[BaseChatModel]:  # Changed return type to be more generic
         env_data = info.data
         local_development = env_data.get("LOCAL_DEVELOPMENT")
+        print(f"local_development: {local_development}")
+        print(f"env_data: {env_data}")
 
         if local_development:
             model_name = env_data.get("GROQ_MODEL_NAME")
-
-            return ChatGroq(model_name=model_name)
-
-        model_name = env_data.get("OPENAI_MODEL_NAME")
-
-        return ChatOpenAI(model_name=model_name, api_key=env_data.get("OPENAI_API_KEY"))
+            api_key = env_data.get("GROQ_API_KEY")
+            
+            if model_name:
+                return ChatGroq(model_name=model_name, api_key=api_key)
+            else:
+                raise ValueError("GROQ_MODEL_NAME must be set when LOCAL_DEVELOPMENT is True")
+        else:
+            model_name = env_data.get("OPENAI_MODEL_NAME")
+            api_key = env_data.get("OPENAI_API_KEY")
+            
+            if model_name:
+                return ChatOpenAI(model_name=model_name, api_key=api_key)
+            else:
+                raise ValueError("OPENAI_MODEL_NAME must be set when LOCAL_DEVELOPMENT is False")
 
 
 settings = Settings()
