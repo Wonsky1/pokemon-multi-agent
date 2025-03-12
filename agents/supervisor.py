@@ -4,6 +4,9 @@ from agents.models import Router
 from langchain_core.messages.base import BaseMessage
 
 from prompts import SYSTEM_PROMPT, DIRECT_ANSWER_PROMPT
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class SupervisorAgent(BaseAgent):
@@ -27,8 +30,9 @@ class SupervisorAgent(BaseAgent):
 
     async def process(self, messages: List[BaseMessage]) -> Union[str, Dict[str, str]]:
         """Determine which agent should handle the request or respond directly."""
-        for approach in ("structured", "raw"):
+        for approach in ("raw", "structured"):
             try:
+                logger.debug(f"Starting supervisor agent with {approach} approach")
                 if approach == "raw":
                     llm_messages = [
                         {

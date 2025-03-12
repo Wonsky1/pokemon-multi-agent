@@ -5,6 +5,9 @@ from tools.langchain_tools import async_pokeapi_tool
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 from langchain_core.language_models import BaseChatModel
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class ResearcherAgent(BaseAgent):
@@ -23,6 +26,7 @@ class ResearcherAgent(BaseAgent):
     async def process(self, messages: List[Dict[str, str]]) -> dict:
         """Process the message using the react agent asynchronously."""
         try:
+            logger.debug(f"Starting Pokémon data retrieval")
             result = await self.agent.ainvoke({"messages": messages})
             return result["structured_response"]
         except Exception as e:

@@ -11,6 +11,9 @@ from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 from langchain.agents import Tool
 from langchain_core.language_models import BaseChatModel
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class PokemonExpertAgent(BaseAgent):
@@ -36,6 +39,7 @@ class PokemonExpertAgent(BaseAgent):
     async def process(self, messages: List[Dict[str, str]]) -> AbstractPokemonBattle:
         """Process the message using the react agent asynchronously."""
         try:
+            logger.debug(f"Starting Pokémon battle analysis")
             result = await self.agent.ainvoke({"messages": messages})
             structured_response: AbstractPokemonBattle = result["structured_response"]
             return structured_response
