@@ -25,7 +25,7 @@ run-local:
 	uvicorn main:app --reload
 
 lint:
-	flake8 --exclude .venv
+	flake8
 
 black:
 	black . --exclude .venv
