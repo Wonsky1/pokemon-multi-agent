@@ -1,6 +1,5 @@
 from typing import Any, Dict, Type
 from typing_extensions import Literal
-from langchain.agents import tool
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 

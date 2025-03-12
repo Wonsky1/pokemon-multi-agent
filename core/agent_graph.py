@@ -3,7 +3,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import MessagesState, END, StateGraph, START
 from langgraph.types import Command
 from agents.models import PokemonData
-from core.di import get_agent_factory
+from core import get_agent_factory
 from core.config import settings
 
 

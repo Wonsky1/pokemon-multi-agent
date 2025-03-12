@@ -1,30 +1,36 @@
 from typing import Dict, Optional, Type, Any
-from langchain.agents import Tool
 from agents.base import BaseAgent
-from core.di import get_pokemon_expert_agent, get_researcher_agent, get_supervisor_agent
-from tools.langchain_tools import async_pokeapi_tool, async_pokeapi_tool_with_types
 from core.config import settings
-
 
 class AgentFactory:
     """Factory for creating agent instances with async support."""
 
     _instances: Dict[str, BaseAgent] = {}
+    _agent_classes = {}
+    _default_configs = {}
 
-    _agent_classes = {
-        "supervisor": get_supervisor_agent(),
-        "researcher": get_researcher_agent(),
-        "pokemon_expert": get_pokemon_expert_agent(),
-    }
+    @classmethod
+    def initialize(cls):
+        """Initialize agent classes and configurations - called after imports are resolved."""
+        from agents.supervisor import SupervisorAgent
+        from agents.researcher import ResearcherAgent
+        from agents.pokemon_expert import PokemonExpertAgent
+        from tools.langchain_tools import async_pokeapi_tool, async_pokeapi_tool_with_types
 
-    _default_configs = {
-        "supervisor": {},
-        "researcher": {},
-        "pokemon_expert": {
-            "tools": [async_pokeapi_tool],
-            "response_format": "detailed",
-        },
-    }
+        cls._agent_classes = {
+            "supervisor": SupervisorAgent,
+            "researcher": ResearcherAgent,
+            "pokemon_expert": PokemonExpertAgent,
+        }
+
+        cls._default_configs = {
+            "supervisor": {},
+            "researcher": {},
+            "pokemon_expert": {
+                "tools": [async_pokeapi_tool],
+                "response_format": "detailed",
+            },
+        }
 
     @classmethod
     def get_agent(cls, agent_type: str, **kwargs) -> BaseAgent:
@@ -41,6 +47,9 @@ class AgentFactory:
         Raises:
             ValueError: If the agent type is not recognized
         """
+        if not cls._agent_classes:
+            cls.initialize()
+            
         if agent_type not in cls._agent_classes:
             raise ValueError(f"Unknown agent type: {agent_type}")
 
@@ -85,7 +94,7 @@ class AgentFactory:
     @classmethod
     def create_battle_expert(
         cls, response_format: str = "simplified", custom_prompt: Optional[str] = None
-    ) -> PokemonExpertAgent:
+    ) -> 'PokemonExpertAgent':
         """
         Create a specialized battle expert agent.
 
@@ -96,6 +105,8 @@ class AgentFactory:
         Returns:
             A configured PokemonExpertAgent for battle analysis
         """
+        from tools.langchain_tools import async_pokeapi_tool_with_types
+        
         battle_expert_config = {
             "tools": [async_pokeapi_tool_with_types],
             "response_format": response_format,

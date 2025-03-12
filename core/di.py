@@ -1,14 +1,12 @@
 from fastapi import Depends
 
-from agents import factory
+from agents.factory import AgentFactory
 from core.agent_graph import AgentGraph
-from tools.pokeapi import PokeAPIService, get_pokemon_service
+from tools.pokeapi import PokeAPIService
 
 
 pokemon_service = None
-
 agent_factory = None
-
 agent_graph = None
 
 
@@ -33,32 +31,32 @@ async def get_pokemon_service() -> PokeAPIService:
     return pokemon_service
 
 
-async def get_agent_factory() -> factory.AgentFactory:
+async def get_agent_factory() -> AgentFactory:
     """Dependency injection provider for the AgentFactory.
     Ensures singleton behavior.
     """
     global agent_factory
     if agent_factory is None:
-        agent_factory = factory.AgentFactory()
+        agent_factory = AgentFactory()
     return agent_factory
 
 
 def get_supervisor_agent(
-    factory: factory.AgentFactory = Depends(get_agent_factory),
+    factory: AgentFactory = Depends(get_agent_factory),
 ):
     """Dependency provider for the Supervisor agent."""
     return factory.get_agent("supervisor")
 
 
 def get_researcher_agent(
-    factory: factory.AgentFactory = Depends(get_agent_factory),
+    factory: AgentFactory = Depends(get_agent_factory),
 ):
     """Dependency provider for the Researcher agent."""
     return factory.get_agent("researcher")
 
 
 def get_pokemon_expert_agent(
-    factory: factory.AgentFactory = Depends(get_agent_factory),
+    factory: AgentFactory = Depends(get_agent_factory),
     response_format: str = "detailed",
 ):
     """Dependency provider for the Pokemon Expert agent."""
@@ -66,7 +64,7 @@ def get_pokemon_expert_agent(
 
 
 def get_battle_expert_agent(
-    factory: factory.AgentFactory = Depends(get_agent_factory),
+    factory: AgentFactory = Depends(get_agent_factory),
     response_format: str = "simplified",
     custom_prompt: str = None,
 ):
@@ -78,7 +76,7 @@ def get_battle_expert_agent(
 
 def get_agent_graph(
     pokemon_service: PokeAPIService = Depends(get_pokemon_service),
-    agent_factory: factory.AgentFactory = Depends(get_agent_factory),
+    agent_factory: AgentFactory = Depends(get_agent_factory),
 ) -> AgentGraph:
     """Dependency provider for the AgentGraph."""
     global agent_graph
