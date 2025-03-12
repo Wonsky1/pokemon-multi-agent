@@ -4,6 +4,7 @@ from pydantic import field_validator, ValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
+from langchain_openai import ChatOpenAI
 
 
 load_dotenv("dev.env")
@@ -18,8 +19,13 @@ class Settings(BaseSettings):
 
     POKEAPI_BASE_URL: str = "https://pokeapi.co/api/v2"
 
-    GROQ_API_KEY: str
-    GROQ_MODEL_NAME: str
+    GROQ_API_KEY: Optional[str] = None
+    GROQ_MODEL_NAME: Optional[str] = None
+
+    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_MODEL_NAME: Optional[str] = None
+
+    LOCAL_DEVELOPMENT: bool = False
 
     GENERATIVE_MODEL: Optional[ChatGroq] = None
 
@@ -33,10 +39,16 @@ class Settings(BaseSettings):
         cls, value: Optional[ChatGroq], info: ValidationInfo
     ) -> Optional[ChatGroq]:
         env_data = info.data
+        local_development = env_data.get("LOCAL_DEVELOPMENT")
 
-        model_name = env_data.get("GROQ_MODEL_NAME")
+        if local_development:
+            model_name = env_data.get("GROQ_MODEL_NAME")
 
-        return ChatGroq(model_name=model_name)
+            return ChatGroq(model_name=model_name)
+
+        model_name = env_data.get("OPENAI_MODEL_NAME")
+
+        return ChatOpenAI(model_name=model_name, api_key=env_data.get("OPENAI_API_KEY"))
 
 
 settings = Settings()

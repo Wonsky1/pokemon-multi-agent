@@ -5,15 +5,16 @@ from agents.models import (
     DetailedPokemonBattle,
     SimplifiedPokemonBattle,
 )
+
 from prompts import EXPERT_AGENT_PROMPT
 from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 from langchain.agents import Tool
 from langchain_core.language_models import BaseChatModel
-from logging import getLogger
+from core.logging import get_logger
 
-logger = getLogger(__name__)
+logger = get_logger("agents.pokemon_expert")
 
 
 class PokemonExpertAgent(BaseAgent):

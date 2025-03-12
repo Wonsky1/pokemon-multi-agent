@@ -1,8 +1,6 @@
 from contextlib import asynccontextmanager
-from http.client import HTTPException
-import logging
-import time
-from fastapi import FastAPI, Depends
+from http import HTTPStatus
+from fastapi import FastAPI, Depends, HTTPException
 from prompts import BATTLE_EXPERT_PROMPT
 from agents.pokemon_expert import PokemonExpertAgent
 from core.di import get_agent_factory, get_pokemon_service, initialize_pokemon_service, shutdown_pokemon_service, get_agent_graph
@@ -10,23 +8,13 @@ from api.models import ChatRequest
 from core.agent_graph import AgentGraph
 from core.exceptions import PokemonNotFoundError
 from tools.pokeapi import PokeAPIService
+from core.logging import configure_all_loggers, get_logger
+
+configure_all_loggers(debug_mode=False)
+logger = get_logger(__name__)
 
 agent_graph: AgentGraph | None = None
 battle_expert: PokemonExpertAgent | None = None
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-
-log_format = "%(asctime)s - %(levelname)s - %(message)s"
-date_format = "%Y-%m-%d %H:%M:%S"
-formatter = logging.Formatter(fmt=log_format, datefmt=date_format)
-
-uvicorn_access_logger = logging.getLogger("uvicorn.access")
-uvicorn_error_logger = logging.getLogger("uvicorn.error")
-
-for logger in (uvicorn_access_logger, uvicorn_error_logger):
-    for handler in logger.handlers:
-        handler.setFormatter(formatter)
 
 
 @asynccontextmanager
@@ -39,12 +27,16 @@ async def lifespan(app: FastAPI):
 
     global battle_expert
     battle_expert = get_agent_factory().create_battle_expert(
-        custom_prompt=BATTLE_EXPERT_PROMPT
+        custom_prompt=BATTLE_EXPERT_PROMPT,
+        use_tool=False,
     )
-
+    
+    logger.info("System initialization complete")
     yield
 
+    logger.info("Shutting down the Pokémon Multi-Agent System")
     await shutdown_pokemon_service()
+    logger.info("System shutdown complete")
 
 
 app = FastAPI(
@@ -59,12 +51,13 @@ app = FastAPI(
 async def chat(request: ChatRequest):
     """Chat endpoint."""
     try:
-        logger.info(f"Processing chat request")
+        logger.info(f"Processing chat request: '{request.question}'")
         result = await agent_graph.invoke(request.question)
+        logger.info(f"Chat request processed successfully")
         return result
     except Exception as e:
-        logger.error(f"Error processing chat request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error processing chat request: {e}", exc_info=True)
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @app.get("/battle")
@@ -75,26 +68,35 @@ async def battle(
 ):
     """Battle endpoint."""
     try:
-        logger.info(f"Processing battle request")
-        pokemon1_data = await pokemon_service.get_pokemon_data(pokemon1)
-        pokemon2_data = await pokemon_service.get_pokemon_data(pokemon2)
-
+        logger.info(f"Processing battle request: {pokemon1} vs {pokemon2}")
+        pokemon1_data = await pokemon_service.get_pokemon_data(pokemon1, get_type_data=True)
+        logger.debug(f"Retrieved data for {pokemon1}")
+        
+        pokemon2_data = await pokemon_service.get_pokemon_data(pokemon2, get_type_data=True)
+        logger.debug(f"Retrieved data for {pokemon2}")
+        
         query = f"Who would win in a battle, {pokemon1}: {pokemon1_data}\nor {pokemon2}: {pokemon2_data}?"
         messages = [{"role": "human", "content": query}]
+        
+        logger.debug(f"Sending battle analysis query to expert agent")
         result = await battle_expert.process(messages)
+        
+        logger.info(f"Battle request processed successfully")
         return result
 
     except PokemonNotFoundError as e:
+        logger.warning(f"Pokemon not found: {str(e)}")
         return {
             "winner": "BATTLE_IMPOSSIBLE",
             "reasoning": "Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names.",
         }
     except Exception as e:
-        logger.error(f"Error processing battle request: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error processing battle request: {e}", exc_info=True)
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @app.get("/")
 async def root():
     """Root endpoint."""
+    logger.debug("Root endpoint accessed")
     return {"message": "Welcome to the Pokémon Multi-Agent System API"}

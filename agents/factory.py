@@ -15,7 +15,7 @@ class AgentFactory:
         from agents.supervisor import SupervisorAgent
         from agents.researcher import ResearcherAgent
         from agents.pokemon_expert import PokemonExpertAgent
-        from tools.langchain_tools import async_pokeapi_tool, async_pokeapi_tool_with_types
+        from tools.langchain_tools import async_pokeapi_tool
 
         cls._agent_classes = {
             "supervisor": SupervisorAgent,
@@ -93,7 +93,7 @@ class AgentFactory:
 
     @classmethod
     def create_battle_expert(
-        cls, response_format: str = "simplified", custom_prompt: Optional[str] = None
+        cls, response_format: str = "simplified", custom_prompt: Optional[str] = None, use_tool: bool = True
     ) -> 'PokemonExpertAgent':
         """
         Create a specialized battle expert agent.
@@ -105,10 +105,13 @@ class AgentFactory:
         Returns:
             A configured PokemonExpertAgent for battle analysis
         """
-        from tools.langchain_tools import async_pokeapi_tool_with_types
-        
+        tools = []
+        if use_tool:
+            from tools.langchain_tools import async_pokeapi_tool_with_types
+            tools = [async_pokeapi_tool_with_types]
+
         battle_expert_config = {
-            "tools": [async_pokeapi_tool_with_types],
+            "tools": tools,
             "response_format": response_format,
         }
 

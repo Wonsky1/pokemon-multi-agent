@@ -4,9 +4,9 @@ from agents.models import Router
 from langchain_core.messages.base import BaseMessage
 
 from prompts import SYSTEM_PROMPT, DIRECT_ANSWER_PROMPT
-from logging import getLogger
+from core.logging import get_logger
 
-logger = getLogger(__name__)
+logger = get_logger("agents.supervisor")
 
 
 class SupervisorAgent(BaseAgent):

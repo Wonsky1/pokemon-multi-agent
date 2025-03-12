@@ -5,9 +5,9 @@ from tools.langchain_tools import async_pokeapi_tool
 from agents.base import BaseAgent
 from langgraph.prebuilt import create_react_agent
 from langchain_core.language_models import BaseChatModel
-from logging import getLogger
+from core.logging import get_logger
 
-logger = getLogger(__name__)
+logger = get_logger("agents.researcher")
 
 
 class ResearcherAgent(BaseAgent):
