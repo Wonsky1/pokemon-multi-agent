@@ -66,14 +66,6 @@ def configure_all_loggers(debug_mode: bool = False):
     """
     log_level = logging.DEBUG if debug_mode else logging.INFO
 
-    root_logger = setup_logger(
-        name="",
-        level=log_level,
-        file_path=APP_LOG_FILE,
-        console=True,
-        propagate=False,
-    )
-
     setup_logger(
         name="agents",
         level=log_level,

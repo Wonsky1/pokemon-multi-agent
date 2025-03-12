@@ -58,7 +58,7 @@ async def chat(request: ChatRequest):
     try:
         logger.info(f"Processing chat request: '{request.question}'")
         result = await agent_graph.invoke(request.question)
-        logger.info(f"Chat request processed successfully")
+        logger.info("Chat request processed successfully")
         return result
     except Exception as e:
         logger.error(f"Error processing chat request: {e}", exc_info=True)
@@ -87,10 +87,10 @@ async def battle(
         query = f"Who would win in a battle, {pokemon1}: {pokemon1_data}\nor {pokemon2}: {pokemon2_data}?"
         messages = [{"role": "human", "content": query}]
 
-        logger.debug(f"Sending battle analysis query to expert agent")
+        logger.debug("Sending battle analysis query to expert agent")
         result = await battle_expert.process(messages)
 
-        logger.info(f"Battle request processed successfully")
+        logger.info("Battle request processed successfully")
         return result
 
     except PokemonNotFoundError as e:

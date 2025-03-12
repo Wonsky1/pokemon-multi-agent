@@ -45,7 +45,7 @@ class PokemonExpertAgent(BaseAgent):
             result = await self.agent.ainvoke({"messages": messages})
             structured_response: AbstractPokemonBattle = result["structured_response"]
             return structured_response
-        except Exception as e:
+        except Exception:
             return SimplifiedPokemonBattle(
                 winner="BATTLE_IMPOSSIBLE",
                 reasoning="Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names.",

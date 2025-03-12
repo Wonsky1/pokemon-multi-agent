@@ -27,10 +27,10 @@ class ResearcherAgent(BaseAgent):
     async def process(self, messages: List[Dict[str, str]]) -> dict:
         """Process the message using the react agent asynchronously."""
         try:
-            logger.debug(f"Starting Pokémon data retrieval")
+            logger.debug("Starting Pokémon data retrieval")
             result = await self.agent.ainvoke({"messages": messages})
             return result["structured_response"]
-        except Exception as e:
+        except Exception:
             return {
                 "name": "NOT_FOUND",
                 "base_stats": {

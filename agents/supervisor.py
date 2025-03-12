@@ -14,17 +14,17 @@ class SupervisorAgent(BaseAgent):
 
     VALID_OPTIONS = ["researcher", "pokemon_expert", "direct_response"]
 
-    RAW_CALL_SUFFIX: str = """    
+    RAW_CALL_SUFFIX: str = """
     IMPORTANT: Respond with ONLY ONE WORD - either "researcher", "pokemon_expert", or "direct_response".
     Do not include any other text, explanations, or formatting.
     """
 
     STRUCTURED_CALL_SUFFIX: str = """
     You must respond with a valid JSON object containing the key "next" with one of these three values.
-    
+
     For example:
     {"next": "direct_response"}
-    
+
     Always use this exact JSON format - nothing else. No explanations, no additional text.
     """
 
