@@ -7,7 +7,7 @@ class Router(BaseModel):
 
     next: str = Field(
         description="The next agent to route to.",
-        enum=["researcher", "pokemon_expert", "direct_response"],
+        json_schema_extra={"enum": ["researcher", "pokemon_expert", "direct_response"]},
     )
 
 
