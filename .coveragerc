@@ -1,0 +1,19 @@
+[run]
+omit =
+    */tests/*
+    */test_*.py
+    */__init__.py
+    .*/
+    */.*/**
+    */core/config.py
+    */core/exceptions.py
+    */api/models.py
+    */core/logging.py
+    */agents/models.py
+
+branch = True
+
+[report]
+fail_under = 80
+
+show_missing = True
