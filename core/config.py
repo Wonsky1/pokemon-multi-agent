@@ -14,12 +14,14 @@ load_dotenv("dev.env")
 
 class ResponseFormat(StrEnum):
     """Enum for agent response formats."""
+
     SIMPLIFIED = "simplified"
     DETAILED = "detailed"
 
 
 class AgentType(StrEnum):
     """Enum for agent types."""
+
     SUPERVISOR = "supervisor"
     RESEARCHER = "researcher"
     POKEMON_EXPERT = "pokemon_expert"
@@ -28,6 +30,7 @@ class AgentType(StrEnum):
 
 class RouterOptions(StrEnum):
     """Enum for router response options."""
+
     RESEARCHER = AgentType.RESEARCHER
     POKEMON_EXPERT = AgentType.POKEMON_EXPERT
     DIRECT_RESPONSE = AgentType.DIRECT_RESPONSE
@@ -35,6 +38,7 @@ class RouterOptions(StrEnum):
 
 class PokemonNotFoundStatus(StrEnum):
     """Enum for Pokemon not found status."""
+
     NOT_FOUND = "NOT_FOUND"
     BATTLE_IMPOSSIBLE = "BATTLE_IMPOSSIBLE"
     ANSWER_IMPOSSIBLE = "ANSWER_IMPOSSIBLE"
@@ -42,6 +46,7 @@ class PokemonNotFoundStatus(StrEnum):
 
 class Settings(BaseSettings):
     """Class defining configuration settings using Pydantic."""
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=True
     )

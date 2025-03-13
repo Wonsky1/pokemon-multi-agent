@@ -221,7 +221,8 @@ class TestAgentFactory(unittest.TestCase):
         AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
 
         agent = AgentFactory.create_battle_expert(
-            response_format=ResponseFormat.DETAILED, custom_prompt="Analyze battle strategy"
+            response_format=ResponseFormat.DETAILED,
+            custom_prompt="Analyze battle strategy",
         )
 
         mock_agent_cls.assert_called_once()
@@ -292,7 +293,8 @@ class TestAgentFactory(unittest.TestCase):
         AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
 
         agent = get_battle_expert_agent(
-            response_format=ResponseFormat.DETAILED, custom_prompt="Focus on battle analysis"
+            response_format=ResponseFormat.DETAILED,
+            custom_prompt="Focus on battle analysis",
         )
 
         mock_agent_cls.assert_called_once()
