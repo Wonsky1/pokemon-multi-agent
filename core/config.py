@@ -1,5 +1,5 @@
-from enum import Enum
-from typing import Optional
+from enum import Enum, StrEnum
+from typing import Any, Dict, Optional
 from pydantic import field_validator, ValidationInfo
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -11,16 +11,46 @@ from langchain_openai import ChatOpenAI
 
 load_dotenv("dev.env")
 
+class ResponseFormat(StrEnum):
+    """Enum for agent response formats."""
+    SIMPLIFIED = "simplified"
+    DETAILED = "detailed"
+
+class AgentType(StrEnum):
+    """Enum for agent types."""
+    SUPERVISOR = "supervisor"
+    RESEARCHER = "researcher"
+    POKEMON_EXPERT = "pokemon_expert"
+    DIRECT_RESPONSE = "direct_response"
+
+
+class RouterOptions(StrEnum):
+    """Enum for router response options."""
+    RESEARCHER = AgentType.RESEARCHER
+    POKEMON_EXPERT = AgentType.POKEMON_EXPERT
+    DIRECT_RESPONSE = AgentType.DIRECT_RESPONSE
+
+
+class PokemonNotFoundStatus(StrEnum):
+    """Enum for Pokemon not found status."""
+    NOT_FOUND = "NOT_FOUND"
+    BATTLE_IMPOSSIBLE = "BATTLE_IMPOSSIBLE"
+
 
 class Settings(BaseSettings):
     """Class defining configuration settings using Pydantic."""
-
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", case_sensitive=True
     )
 
+    # API Configuration
     POKEAPI_BASE_URL: str = "https://pokeapi.co/api/v2"
+    
+    # HTTP Client Configuration
+    HTTP_TIMEOUT_SECONDS: float = 10.0
+    CACHE_SIZE: int = 100
 
+    # Model Configuration
     GROQ_API_KEY: Optional[str] = None
     GROQ_MODEL_NAME: Optional[str] = None
 
@@ -31,10 +61,23 @@ class Settings(BaseSettings):
 
     GENERATIVE_MODEL: Optional[BaseChatModel] = None
 
+    # LangSmith Configuration
     LANGSMITH_TRACING: Optional[str] = None
     LANGSMITH_ENDPOINT: Optional[str] = None
     LANGSMITH_API_KEY: Optional[str] = None
     LANGSMITH_PROJECT: Optional[str] = None
+    
+    # Agent Configuration
+    DEFAULT_RESPONSE_FORMAT: ResponseFormat = ResponseFormat.DETAILED
+    
+    # Default agent configurations
+    DEFAULT_AGENT_CONFIGS: Dict[str, Dict[str, Any]] = {
+        AgentType.SUPERVISOR: {},
+        AgentType.RESEARCHER: {},
+        AgentType.POKEMON_EXPERT: {
+            "response_format": ResponseFormat.DETAILED,
+        },
+    }
 
     @field_validator("GENERATIVE_MODEL")
     def generative_model(
@@ -64,8 +107,5 @@ class Settings(BaseSettings):
                     "OPENAI_MODEL_NAME must be set when LOCAL_DEVELOPMENT is False"
                 )
 
-    class ResponseFormat(Enum):
-        SIMPLIFIED: str = "simplified"
-        DETAILED: str = "detailed"
 
 settings = Settings()

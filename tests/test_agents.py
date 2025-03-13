@@ -10,7 +10,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from agents.pokemon_expert import PokemonExpertAgent
 from agents.models import DetailedPokemonBattle, SimplifiedPokemonBattle
 from agents.researcher import ResearcherAgent
-from core.config import settings
+from core.config import ResponseFormat, settings, AgentType
 
 from agents.factory import (
     AgentFactory,
@@ -47,7 +47,7 @@ class TestSupervisorAgent(unittest.IsolatedAsyncioTestCase):
         self.agent.llm.ainvoke.return_value.content = "researcher"
         messages = [HumanMessage(content="Find some facts about Pikachu")]
         result = await self.agent.process(messages)
-        self.assertEqual(result, "researcher")
+        self.assertEqual(result, AgentType.RESEARCHER.value)
 
     async def test_raw_routing_to_pokemon_expert(self):
         """
@@ -179,7 +179,7 @@ class TestAgentFactory(unittest.TestCase):
         """
         default_agent = AgentFactory.get_agent("pokemon_expert")
         custom_agent = AgentFactory.get_agent(
-            "pokemon_expert", response_format=settings.ResponseFormat.SIMPLIFIED
+            "pokemon_expert", response_format=ResponseFormat.SIMPLIFIED
         )
         self.assertIsNot(default_agent, custom_agent)
 
@@ -221,13 +221,13 @@ class TestAgentFactory(unittest.TestCase):
         AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
 
         agent = AgentFactory.create_battle_expert(
-            response_format=settings.ResponseFormat.DETAILED, custom_prompt="Analyze battle strategy"
+            response_format=ResponseFormat.DETAILED, custom_prompt="Analyze battle strategy"
         )
 
         mock_agent_cls.assert_called_once()
         call_args = mock_agent_cls.call_args[1]
 
-        self.assertEqual(call_args["response_format"], settings.ResponseFormat.DETAILED)
+        self.assertEqual(call_args["response_format"], ResponseFormat.DETAILED)
         self.assertEqual(call_args["prompt"], "Analyze battle strategy")
         self.assertIn("tools", call_args)
         self.assertIs(agent, mock_instance)
@@ -247,7 +247,7 @@ class TestAgentFactory(unittest.TestCase):
         mock_agent_cls.assert_called_once()
         call_args = mock_agent_cls.call_args[1]
 
-        self.assertEqual(call_args["response_format"], settings.ResponseFormat.SIMPLIFIED)
+        self.assertEqual(call_args["response_format"], ResponseFormat.SIMPLIFIED)
         self.assertNotIn("prompt", call_args)
         self.assertEqual(call_args["tools"], [])
         self.assertIs(agent, mock_instance)
@@ -292,13 +292,13 @@ class TestAgentFactory(unittest.TestCase):
         AgentFactory._agent_classes["pokemon_expert"] = mock_agent_cls
 
         agent = get_battle_expert_agent(
-            response_format=settings.ResponseFormat.DETAILED, custom_prompt="Focus on battle analysis"
+            response_format=ResponseFormat.DETAILED, custom_prompt="Focus on battle analysis"
         )
 
         mock_agent_cls.assert_called_once()
         call_args = mock_agent_cls.call_args[1]
 
-        self.assertEqual(call_args["response_format"], settings.ResponseFormat.DETAILED)
+        self.assertEqual(call_args["response_format"], ResponseFormat.DETAILED)
         self.assertEqual(call_args["prompt"], "Focus on battle analysis")
         self.assertIs(agent, mock_instance)
 

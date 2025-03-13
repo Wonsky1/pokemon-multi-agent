@@ -1,6 +1,6 @@
 from typing import Dict, Any
 import httpx
-from core.config import settings
+from core.config import settings, PokemonNotFoundStatus
 from core.exceptions import PokemonNotFoundError
 
 
@@ -9,9 +9,9 @@ class PokeAPIService:
 
     BASE_URL = settings.POKEAPI_BASE_URL
 
-    def __init__(self, cache_size: int = 100):
+    def __init__(self, cache_size: int = settings.CACHE_SIZE):
         """Initialize the service with an optional cache size."""
-        self.client = httpx.AsyncClient(timeout=10.0)
+        self.client = httpx.AsyncClient(timeout=settings.HTTP_TIMEOUT_SECONDS)
 
         self.pokemon_cache = {}
         self.type_cache = {}

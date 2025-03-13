@@ -9,11 +9,11 @@ from agents.models import (
 from prompts import EXPERT_AGENT_PROMPT
 from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.base import BaseAgent
+from core.config import ResponseFormat, PokemonNotFoundStatus
 from langgraph.prebuilt import create_react_agent
 from langchain.agents import Tool
 from langchain_core.language_models import BaseChatModel
 from core.logging import get_logger
-from core.config import settings
 
 logger = get_logger("agents.pokemon_expert")
 
@@ -26,13 +26,13 @@ class PokemonExpertAgent(BaseAgent):
         llm: BaseChatModel,
         tools: List[Tool] = [async_pokeapi_tool_with_types],
         prompt: str = EXPERT_AGENT_PROMPT,
-        response_format: str = settings.ResponseFormat.DETAILED,
+        response_format: str = ResponseFormat.DETAILED,
     ):
         """Initialize the Pokémon expert agent."""
         super().__init__(llm)
         response_format = (
             DetailedPokemonBattle
-            if response_format == settings.ResponseFormat.SIMPLIFIED
+            if response_format == ResponseFormat.DETAILED
             else SimplifiedPokemonBattle
         )
         self.agent = create_react_agent(
@@ -48,6 +48,6 @@ class PokemonExpertAgent(BaseAgent):
             return structured_response
         except Exception:
             return SimplifiedPokemonBattle(
-                winner="BATTLE_IMPOSSIBLE",
+                winner=PokemonNotFoundStatus.BATTLE_IMPOSSIBLE,
                 reasoning="Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names.",
             )

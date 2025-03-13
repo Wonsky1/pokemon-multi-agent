@@ -1,11 +1,11 @@
 from typing import Dict, Optional, Type, Any
 from agents.base import BaseAgent
 from agents.pokemon_expert import PokemonExpertAgent
-from core.config import settings
+from core.config import settings, AgentType, ResponseFormat
 from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.supervisor import SupervisorAgent
 from agents.researcher import ResearcherAgent
-from core.config import settings
+from agents.pokemon_expert import PokemonExpertAgent
 from tools.langchain_tools import async_pokeapi_tool
 
 
@@ -20,19 +20,12 @@ class AgentFactory:
     def initialize(cls):
         """Initialize agent classes and configurations - called after imports are resolved."""
         cls._agent_classes = {
-            "supervisor": SupervisorAgent,
-            "researcher": ResearcherAgent,
-            "pokemon_expert": PokemonExpertAgent,
+            AgentType.SUPERVISOR: SupervisorAgent,
+            AgentType.RESEARCHER: ResearcherAgent,
+            AgentType.POKEMON_EXPERT: PokemonExpertAgent,
         }
 
-        cls._default_configs = {
-            "supervisor": {},
-            "researcher": {},
-            "pokemon_expert": {
-                "tools": [async_pokeapi_tool],
-                "response_format": settings.ResponseFormat.DETAILED,
-            },
-        }
+        cls._default_configs = settings.DEFAULT_AGENT_CONFIGS.copy()
 
     @classmethod
     def get_agent(cls, agent_type: str, **kwargs) -> BaseAgent:
@@ -96,7 +89,7 @@ class AgentFactory:
     @classmethod
     def create_battle_expert(
         cls,
-        response_format: str = settings.ResponseFormat.SIMPLIFIED,
+        response_format: str = ResponseFormat.SIMPLIFIED,
         custom_prompt: Optional[str] = None,
         use_tool: bool = True,
     ) -> PokemonExpertAgent:
@@ -122,7 +115,7 @@ class AgentFactory:
         if custom_prompt:
             battle_expert_config["prompt"] = custom_prompt
 
-        return cls.get_agent("pokemon_expert", **battle_expert_config)
+        return cls.get_agent(AgentType.POKEMON_EXPERT, **battle_expert_config)
 
 
 agent_factory = None
@@ -142,27 +135,27 @@ def get_supervisor_agent(
     factory: AgentFactory = get_agent_factory(),
 ):
     """Dependency provider for the Supervisor agent."""
-    return factory.get_agent("supervisor")
+    return factory.get_agent(AgentType.SUPERVISOR)
 
 
 def get_researcher_agent(
     factory: AgentFactory = get_agent_factory(),
 ):
     """Dependency provider for the Researcher agent."""
-    return factory.get_agent("researcher")
+    return factory.get_agent(AgentType.RESEARCHER)
 
 
 def get_pokemon_expert_agent(
     factory: AgentFactory = get_agent_factory(),
-    response_format: str = settings.ResponseFormat.DETAILED,
+    response_format: str = ResponseFormat.DETAILED,
 ):
     """Dependency provider for the Pokemon Expert agent."""
-    return factory.get_agent("pokemon_expert", response_format=response_format)
+    return factory.get_agent(AgentType.POKEMON_EXPERT, response_format=response_format)
 
 
 def get_battle_expert_agent(
     factory: AgentFactory = get_agent_factory(),
-    response_format: str = settings.ResponseFormat.SIMPLIFIED,
+    response_format: str = ResponseFormat.SIMPLIFIED,
     custom_prompt: str = None,
 ):
     """Dependency provider for a specialized Battle Expert agent."""

@@ -3,6 +3,7 @@ from agents.models import PokemonData
 from prompts import RESEARCHER_AGENT_PROMPT
 from tools.langchain_tools import async_pokeapi_tool
 from agents.base import BaseAgent
+from core.config import PokemonNotFoundStatus
 from langgraph.prebuilt import create_react_agent
 from langchain_core.language_models import BaseChatModel
 from core.logging import get_logger
@@ -32,7 +33,7 @@ class ResearcherAgent(BaseAgent):
             return result["structured_response"]
         except Exception:
             return {
-                "name": "NOT_FOUND",
+                "name": PokemonNotFoundStatus.NOT_FOUND,
                 "base_stats": {
                     "hp": 0,
                     "attack": 0,

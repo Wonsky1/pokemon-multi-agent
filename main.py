@@ -6,6 +6,7 @@ from prompts import BATTLE_EXPERT_PROMPT
 from agents.pokemon_expert import PokemonExpertAgent
 from api.models import ChatRequest
 from core.agent_graph import AgentGraph, get_agent_graph
+from core.config import PokemonNotFoundStatus
 from core.exceptions import PokemonNotFoundError
 from tools.pokeapi import (
     PokeAPIService,
@@ -96,7 +97,7 @@ async def battle(
     except PokemonNotFoundError as e:
         logger.warning(f"Pokemon not found: {str(e)}")
         return {
-            "winner": "BATTLE_IMPOSSIBLE",
+            "winner": PokemonNotFoundStatus.BATTLE_IMPOSSIBLE,
             "reasoning": "Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names.",
         }
     except Exception as e:

@@ -3,7 +3,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 from langgraph.graph import MessagesState, END, StateGraph, START
 from langgraph.types import Command
 from agents.factory import get_agent_factory
-from core.config import settings
+from core.config import settings, AgentType, RouterOptions
 
 
 class State(MessagesState):
@@ -19,9 +19,9 @@ class AgentGraph:
         """Initialize the agent graph."""
         self.llm = settings.GENERATIVE_MODEL
         factory = get_agent_factory()
-        self.supervisor = factory.get_agent("supervisor")
-        self.researcher = factory.get_agent("researcher")
-        self.pokemon_expert = factory.get_agent("pokemon_expert")
+        self.supervisor = factory.get_agent(AgentType.SUPERVISOR)
+        self.researcher = factory.get_agent(AgentType.RESEARCHER)
+        self.pokemon_expert = factory.get_agent(AgentType.POKEMON_EXPERT)
         self.graph = self._build_graph()
 
     async def _supervisor_node(

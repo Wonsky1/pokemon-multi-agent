@@ -1,5 +1,6 @@
 from abc import ABC
 from pydantic import BaseModel, Field
+from core.config import RouterOptions
 
 
 class Router(BaseModel):
@@ -7,7 +8,7 @@ class Router(BaseModel):
 
     next: str = Field(
         description="The next agent to route to.",
-        json_schema_extra={"enum": ["researcher", "pokemon_expert", "direct_response"]},
+        json_schema_extra={"enum": [option.value for option in RouterOptions]},
     )
 
 
