@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional
 from pydantic import field_validator, ValidationInfo
 
@@ -63,5 +64,8 @@ class Settings(BaseSettings):
                     "OPENAI_MODEL_NAME must be set when LOCAL_DEVELOPMENT is False"
                 )
 
+    class ResponseFormat(Enum):
+        SIMPLIFIED: str = "simplified"
+        DETAILED: str = "detailed"
 
 settings = Settings()

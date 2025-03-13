@@ -5,6 +5,7 @@ from core.config import settings
 from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.supervisor import SupervisorAgent
 from agents.researcher import ResearcherAgent
+from core.config import settings
 from tools.langchain_tools import async_pokeapi_tool
 
 
@@ -29,7 +30,7 @@ class AgentFactory:
             "researcher": {},
             "pokemon_expert": {
                 "tools": [async_pokeapi_tool],
-                "response_format": "detailed",
+                "response_format": settings.ResponseFormat.DETAILED,
             },
         }
 
@@ -95,7 +96,7 @@ class AgentFactory:
     @classmethod
     def create_battle_expert(
         cls,
-        response_format: str = "simplified",
+        response_format: str = settings.ResponseFormat.SIMPLIFIED,
         custom_prompt: Optional[str] = None,
         use_tool: bool = True,
     ) -> PokemonExpertAgent:
@@ -153,7 +154,7 @@ def get_researcher_agent(
 
 def get_pokemon_expert_agent(
     factory: AgentFactory = get_agent_factory(),
-    response_format: str = "detailed",
+    response_format: str = settings.ResponseFormat.DETAILED,
 ):
     """Dependency provider for the Pokemon Expert agent."""
     return factory.get_agent("pokemon_expert", response_format=response_format)
@@ -161,7 +162,7 @@ def get_pokemon_expert_agent(
 
 def get_battle_expert_agent(
     factory: AgentFactory = get_agent_factory(),
-    response_format: str = "simplified",
+    response_format: str = settings.ResponseFormat.SIMPLIFIED,
     custom_prompt: str = None,
 ):
     """Dependency provider for a specialized Battle Expert agent."""

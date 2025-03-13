@@ -13,6 +13,7 @@ from langgraph.prebuilt import create_react_agent
 from langchain.agents import Tool
 from langchain_core.language_models import BaseChatModel
 from core.logging import get_logger
+from core.config import settings
 
 logger = get_logger("agents.pokemon_expert")
 
@@ -25,13 +26,13 @@ class PokemonExpertAgent(BaseAgent):
         llm: BaseChatModel,
         tools: List[Tool] = [async_pokeapi_tool_with_types],
         prompt: str = EXPERT_AGENT_PROMPT,
-        response_format: str = "detailed",
+        response_format: str = settings.ResponseFormat.DETAILED,
     ):
         """Initialize the Pokémon expert agent."""
         super().__init__(llm)
         response_format = (
             DetailedPokemonBattle
-            if response_format == "detailed"
+            if response_format == settings.ResponseFormat.SIMPLIFIED
             else SimplifiedPokemonBattle
         )
         self.agent = create_react_agent(
