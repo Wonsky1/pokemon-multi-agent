@@ -17,3 +17,8 @@ httpx
 python-dotenv
 pydantic
 pydantic-settings
+
+
+# For local development:
+# black
+# flake8
