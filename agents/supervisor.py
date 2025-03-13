@@ -15,17 +15,17 @@ class SupervisorAgent(BaseAgent):
 
     VALID_OPTIONS = [option.value for option in RouterOptions]
 
-    RAW_CALL_SUFFIX: str = f"""    
+    RAW_CALL_SUFFIX: str = f"""
     IMPORTANT: Respond with ONLY ONE WORD - either "{RouterOptions.RESEARCHER.value}", "{RouterOptions.POKEMON_EXPERT.value}", or "{RouterOptions.DIRECT_RESPONSE.value}".
     Do not include any other text, explanations, or formatting.
     """
 
     STRUCTURED_CALL_SUFFIX: str = """
     You must respond with a valid JSON object containing the key "next" with one of these three values.
-    
+
     For example:
     {"next": "direct_response"}
-    
+
     Always use this exact JSON format - nothing else. No explanations, no additional text.
     """
 

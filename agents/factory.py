@@ -5,7 +5,6 @@ from core.config import settings, AgentType, ResponseFormat
 from tools.langchain_tools import async_pokeapi_tool_with_types
 from agents.supervisor import SupervisorAgent
 from agents.researcher import ResearcherAgent
-from agents.pokemon_expert import PokemonExpertAgent
 from tools.langchain_tools import async_pokeapi_tool
 
 

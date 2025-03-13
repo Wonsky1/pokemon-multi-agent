@@ -11,10 +11,12 @@ from langchain_openai import ChatOpenAI
 
 load_dotenv("dev.env")
 
+
 class ResponseFormat(StrEnum):
     """Enum for agent response formats."""
     SIMPLIFIED = "simplified"
     DETAILED = "detailed"
+
 
 class AgentType(StrEnum):
     """Enum for agent types."""
@@ -46,7 +48,7 @@ class Settings(BaseSettings):
 
     # API Configuration
     POKEAPI_BASE_URL: str = "https://pokeapi.co/api/v2"
-    
+
     # HTTP Client Configuration
     HTTP_TIMEOUT_SECONDS: float = 10.0
     CACHE_SIZE: int = 100
@@ -67,10 +69,10 @@ class Settings(BaseSettings):
     LANGSMITH_ENDPOINT: Optional[str] = None
     LANGSMITH_API_KEY: Optional[str] = None
     LANGSMITH_PROJECT: Optional[str] = None
-    
+
     # Agent Configuration
     DEFAULT_RESPONSE_FORMAT: ResponseFormat = ResponseFormat.DETAILED
-    
+
     # Default agent configurations
     DEFAULT_AGENT_CONFIGS: Dict[str, Dict[str, Any]] = {
         AgentType.SUPERVISOR: {},
