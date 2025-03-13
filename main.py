@@ -25,6 +25,13 @@ battle_expert: PokemonExpertAgent | None = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Context manager for the lifespan of the Pokémon Multi-Agent System.
+    Initializes the system, yields control, and then shuts down the system.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+    """
     logger.info("Initializing the Pokémon Multi-Agent System")
     initialize_pokemon_service()
 
@@ -55,7 +62,16 @@ app = FastAPI(
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    """Chat endpoint."""
+    """
+    Endpoint for processing chat requests.
+    Invokes the agent graph to process the request and returns the result.
+
+    Args:
+        question : User`s question
+
+    Returns:
+        The result of the chat request processing.
+    """
     try:
         logger.info(f"Processing chat request: '{request.question}'")
         result = await agent_graph.invoke(request.question)
@@ -72,7 +88,17 @@ async def battle(
     pokemon2: str,
     pokemon_service: PokeAPIService = Depends(get_pokemon_service),
 ):
-    """Battle endpoint."""
+    """
+    Endpoint for processing battle requests.
+    Compares two Pokémon and returns the result of a hypothetical battle.
+
+    Args:
+        pokemon1 (str): The name of the first Pokémon.
+        pokemon2 (str): The name of the second Pokémon.
+
+    Returns:
+        The result of the battle request processing.
+    """
     try:
         logger.info(f"Processing battle request: {pokemon1} vs {pokemon2}")
         pokemon1_data = await pokemon_service.get_pokemon_data(
@@ -107,6 +133,12 @@ async def battle(
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
+    """
+    Root endpoint.
+    Returns a welcome message.
+
+    Returns:
+        A dictionary containing a welcome message.
+    """
     logger.debug("Root endpoint accessed")
     return {"message": "Welcome to the Pokémon Multi-Agent System API"}
