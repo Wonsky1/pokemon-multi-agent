@@ -35,6 +35,7 @@ class PokemonNotFoundStatus(StrEnum):
     """Enum for Pokemon not found status."""
     NOT_FOUND = "NOT_FOUND"
     BATTLE_IMPOSSIBLE = "BATTLE_IMPOSSIBLE"
+    ANSWER_IMPOSSIBLE = "ANSWER_IMPOSSIBLE"
 
 
 class Settings(BaseSettings):

@@ -47,7 +47,7 @@ class PokemonExpertAgent(BaseAgent):
             structured_response: AbstractPokemonBattle = result["structured_response"]
             return structured_response
         except Exception:
-            return SimplifiedPokemonBattle(
-                winner=PokemonNotFoundStatus.BATTLE_IMPOSSIBLE,
-                reasoning="Could not analyze the battle due to invalid Pokémon. Please check the spelling of Pokémon names.",
+            return DetailedPokemonBattle(
+                answer=PokemonNotFoundStatus.ANSWER_IMPOSSIBLE,
+                reasoning="Could not analyze the query due to invalid Pokémon. Please check the spelling of Pokémon names.",
             )

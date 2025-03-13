@@ -55,59 +55,59 @@ class TestChatEndpoint(unittest.IsolatedAsyncioTestCase):
         mock_logger.error.assert_called()
 
 
-# class TestBattleEndpoint(unittest.TestCase):
-#     def setUp(self):
-#         self.client = TestClient(app)
+class TestBattleEndpoint(unittest.TestCase):
+    def setUp(self):
+        self.client = TestClient(app)
 
-#         patcher = patch("tools.pokeapi.PokeAPIService", autospec=True)
-#         self.addCleanup(patcher.stop)
-#         self.mock_pokeapi_service_class = patcher.start()
-#         self.mock_service = AsyncMock()
-#         self.mock_pokeapi_service_class.return_value = self.mock_service
+        patcher = patch("tools.pokeapi.PokeAPIService", autospec=True)
+        self.addCleanup(patcher.stop)
+        self.mock_pokeapi_service_class = patcher.start()
+        self.mock_service = AsyncMock()
+        self.mock_pokeapi_service_class.return_value = self.mock_service
 
-#     def tearDown(self):
-#         app.dependency_overrides = {}
+    def tearDown(self):
+        app.dependency_overrides = {}
 
-#     def test_battle_success(self):
-#         self.mock_service.get_pokemon_data.side_effect = [
-#             {"name": "pikachu", "type_details": {}},
-#             {"name": "bulbasaur", "type_details": {}},
-#         ]
+    def test_battle_success(self):
+        self.mock_service.get_pokemon_data.side_effect = [
+            {"name": "pikachu", "type_details": {}},
+            {"name": "bulbasaur", "type_details": {}},
+        ]
 
-#         with patch("main.battle_expert") as mock_battle_expert:
-#             mock_battle_expert.process = AsyncMock(
-#                 return_value={"winner": "pikachu", "reasoning": "Speed advantage"}
-#             )
+        with patch("main.battle_expert") as mock_battle_expert:
+            mock_battle_expert.process = AsyncMock(
+                return_value={"winner": "pikachu", "reasoning": "Speed advantage"}
+            )
 
-#             response = self.client.get("/battle?pokemon1=pikachu&pokemon2=bulbasaur")
+            response = self.client.get("/battle?pokemon1=pikachu&pokemon2=bulbasaur")
 
-#             self.assertEqual(response.status_code, 200)
-#             self.assertEqual(
-#                 response.json(), {"winner": "pikachu", "reasoning": "Speed advantage"}
-#             )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.json(), {"winner": "pikachu", "reasoning": "Speed advantage"}
+            )
 
-#     def test_battle_pokemon_not_found(self):
-#         with patch("main.battle_expert") as mock_battle_expert:
-#             mock_battle_expert.process.side_effect = PokemonNotFoundError(
-#                 "Pokemon not found"
-#             )
+    def test_battle_pokemon_not_found(self):
+        with patch("main.battle_expert") as mock_battle_expert:
+            mock_battle_expert.process.side_effect = PokemonNotFoundError(
+                "Pokemon not found"
+            )
 
-#             response = self.client.get("/battle?pokemon1=invilad&pokemon2=invalid")
+            response = self.client.get("/battle?pokemon1=invilad&pokemon2=invalid")
 
-#         self.assertEqual(response.status_code, 200)
-#         self.assertEqual(response.json()["winner"], "BATTLE_IMPOSSIBLE")
-#         self.mock_service.get_pokemon_data.side_effect = None
-#         self.mock_service.get_pokemon_data.reset_mock()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["winner"], "BATTLE_IMPOSSIBLE")
+        self.mock_service.get_pokemon_data.side_effect = None
+        self.mock_service.get_pokemon_data.reset_mock()
 
-#     def test_battle_internal_error(self):
-#         self.mock_service.get_pokemon_data.side_effect = Exception("Unexpected error")
+    def test_battle_internal_error(self):
+        self.mock_service.get_pokemon_data.side_effect = Exception("Unexpected error")
 
-#         response = self.client.get("/battle?pokemon1=a&pokemon2=b")
+        response = self.client.get("/battle?pokemon1=a&pokemon2=b")
 
-#         self.assertEqual(response.status_code, 500)
-#         self.assertEqual(response.json()["detail"], "Unexpected error")
-#         self.mock_service.get_pokemon_data.side_effect = None
-#         self.mock_service.get_pokemon_data.reset_mock()
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json()["detail"], "Unexpected error")
+        self.mock_service.get_pokemon_data.side_effect = None
+        self.mock_service.get_pokemon_data.reset_mock()
 
 
 @pytest.fixture

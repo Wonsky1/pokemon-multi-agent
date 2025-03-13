@@ -8,9 +8,9 @@ import unittest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from agents.pokemon_expert import PokemonExpertAgent
-from agents.models import DetailedPokemonBattle, SimplifiedPokemonBattle
+from agents.models import DetailedPokemonBattle
 from agents.researcher import ResearcherAgent
-from core.config import ResponseFormat, settings, AgentType
+from core.config import ResponseFormat, settings, AgentType, PokemonNotFoundStatus
 
 from agents.factory import (
     AgentFactory,
@@ -348,8 +348,8 @@ class TestPokemonExpertAgent(unittest.IsolatedAsyncioTestCase):
         agent = PokemonExpertAgent(llm=MagicMock())
         result = await agent.process([{"content": "Invalid input"}])
 
-        self.assertIsInstance(result, SimplifiedPokemonBattle)
-        self.assertEqual(result.winner, "BATTLE_IMPOSSIBLE")
+        self.assertIsInstance(result, DetailedPokemonBattle)
+        self.assertEqual(result.answer, PokemonNotFoundStatus.ANSWER_IMPOSSIBLE)
 
 
 # ------------------------------------

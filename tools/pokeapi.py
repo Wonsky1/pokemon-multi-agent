@@ -33,6 +33,7 @@ class PokeAPIService:
         self, pokemon_name: str, get_type_data: bool = False
     ) -> Dict[str, Any]:
         """Fetch Pokémon data from the PokéAPI with caching."""
+        pokemon_name = pokemon_name.lower()
         cache_key = f"{pokemon_name}_{get_type_data}"
 
         if cache_key in self.pokemon_cache:
@@ -50,7 +51,7 @@ class PokeAPIService:
         self, pokemon_name: str, get_type_data: bool = False
     ) -> Dict[str, Any]:
         """Fetch Pokémon data from the PokéAPI (internal implementation)."""
-        url = f"{self.BASE_URL}/pokemon/{pokemon_name.lower()}"
+        url = f"{self.BASE_URL}/pokemon/{pokemon_name}"
 
         try:
             response = await self.client.get(url)
