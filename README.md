@@ -227,6 +227,8 @@ coverage report
 
 ## 📋 Make Commands
 
+All underlying commands can be accessed in the `Makefile`.
+
 | Command             | Description                                                |
 |---------------------|------------------------------------------------------------|
 | `make venv`         | Creates a new Python virtual environment                   |
